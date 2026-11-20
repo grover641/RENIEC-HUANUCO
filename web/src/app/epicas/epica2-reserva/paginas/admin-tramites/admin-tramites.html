@@ -1,0 +1,57 @@
+<div class="encabezado-pagina">
+  <div><h1>Trámites</h1><p>Catálogo que ven los ciudadanos al reservar. Los cambios se publican al guardar.</p></div>
+  <button type="button" class="btn btn-primario btn-grande" (click)="nuevo()"><app-icono nombre="plus" />Nuevo trámite</button>
+</div>
+
+<div class="dos">
+  <div class="pila" style="gap:10px">
+    @for (t of lista(); track t.id) {
+      <button type="button" class="item" [class.activo]="!esNuevo() && editando().id === t.id" (click)="elegir(t)">
+        <span class="icono-caja" [class]="'icono-caja ' + t.tono"><app-icono [nombre]="t.icono" /></span>
+        <span class="txt"><b>{{ t.nombre }}</b><small>{{ t.categoria }} · {{ t.duracionMin }} min · {{ soles(t.costo) }} · {{ t.requisitos.length }} requisitos</small></span>
+        <span class="insignia" [class]="t.publicado ? 'insignia insignia-verde' : 'insignia insignia-gris'">{{ t.publicado ? 'Publicado' : 'Oculto' }}</span>
+      </button>
+    }
+  </div>
+
+  <section class="tarjeta">
+    <h3>{{ esNuevo() ? 'Nuevo trámite' : 'Editar trámite' }}</h3>
+    <div class="pila" style="margin-top:14px;gap:14px">
+      <div class="campo" [class.con-error]="errores()['nombre']"><label for="tr-nom">Nombre</label>
+        <input id="tr-nom" class="entrada" [value]="editando().nombre" (input)="poner('nombre', $any($event.target).value)" />
+        @if (errores()['nombre']) { <span class="error">{{ errores()['nombre'] }}</span> }</div>
+      <div class="campo"><label for="tr-desc">Descripción corta</label>
+        <input id="tr-desc" class="entrada" [value]="editando().descripcion" (input)="poner('descripcion', $any($event.target).value)" /></div>
+      <div class="campo"><label for="tr-cat">Categoría</label>
+        <select id="tr-cat" class="entrada" (change)="poner('categoria', $any($event.target).value)">
+          @for (c of categorias; track c) { <option [value]="c" [selected]="editando().categoria === c">{{ c }}</option> }
+        </select></div>
+      <div class="rejilla-3" style="gap:10px">
+        <div class="campo" [class.con-error]="errores()['costo']"><label for="tr-cos">Costo (S/)</label>
+          <input id="tr-cos" class="entrada" type="number" min="0" step="0.5" [disabled]="consultar()" [value]="consultar() ? '' : editando().costo" (input)="poner('costo', +$any($event.target).value)" /></div>
+        <div class="campo" [class.con-error]="errores()['duracionMin']"><label for="tr-dur">Duración (min)</label>
+          <input id="tr-dur" class="entrada" type="number" min="5" max="60" [value]="editando().duracionMin" (input)="poner('duracionMin', +$any($event.target).value)" /></div>
+        <div class="campo"><span class="etiqueta">Estado</span>
+          <label class="estado"><span class="interruptor"><input type="checkbox" [checked]="editando().publicado" (change)="poner('publicado', $any($event.target).checked)" aria-label="Publicado" /><span></span></span>{{ editando().publicado ? 'Publicado' : 'Oculto' }}</label></div>
+      </div>
+      <label class="casilla"><input type="checkbox" [checked]="consultar()" (change)="consultar.set($any($event.target).checked)" /><span>La tasa se consulta en la sede («Consultar en sede»)</span></label>
+      @if (errores()['costo'] || errores()['duracionMin']) { <span class="error texto-sm">{{ errores()['costo'] || errores()['duracionMin'] }}</span> }
+      <div class="campo"><span class="etiqueta">Icono</span>
+        <div class="iconos">@for (i of iconos; track i) { <button type="button" class="btn btn-icono" [class.sel]="editando().icono === i" (click)="poner('icono', i)" [attr.aria-label]="'Icono ' + i"><app-icono [nombre]="i" [tam]="18" /></button> }</div></div>
+      <div class="campo" [class.con-error]="errores()['requisitos']"><span class="etiqueta">Requisitos</span>
+        @for (r of editando().requisitos; track $index) {
+          <div class="req"><input class="entrada" [value]="r" placeholder="Escribe un requisito" (input)="requisito($index, $any($event.target).value)" [attr.aria-label]="'Requisito ' + ($index + 1)" />
+            <button type="button" class="btn btn-icono rojo" (click)="quitar($index)" aria-label="Quitar requisito"><app-icono nombre="trash" [tam]="16" /></button></div>
+        }
+        <button type="button" class="btn btn-fantasma agregar" (click)="agregar()"><app-icono nombre="plus" [tam]="16" />Agregar requisito</button>
+        @if (errores()['requisitos']) { <span class="error">{{ errores()['requisitos'] }}</span> }
+      </div>
+      <div class="fila" style="justify-content:flex-end">
+        <button type="button" class="btn btn-fantasma" (click)="descartar()">Descartar</button>
+        <button type="button" class="btn btn-primario" [disabled]="guardando()" (click)="guardar()">
+          @if (guardando()) { <span class="girando"></span>Guardando… } @else { Guardar cambios }
+        </button>
+      </div>
+    </div>
+  </section>
+</div>

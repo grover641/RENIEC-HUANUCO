@@ -1,0 +1,25 @@
+.dos { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 20px; align-items: start; }
+.semana { padding: 18px; overflow-x: auto; }
+.rejilla-semana { display: grid; grid-template-columns: 48px repeat(5, minmax(110px, 1fr)); gap: 8px; min-width: 640px; }
+.cabeza { display: flex; flex-direction: column; align-items: center; height: 42px; font-size: 14px; color: var(--titulo); }
+.cabeza small { font-size: 11px; color: var(--texto-2); }
+.horas { position: relative; }
+.horas span { position: absolute; right: 4px; transform: translateY(-50%); font-size: 11px; color: var(--texto-2); }
+.cuerpo { position: relative; background: #FAFBFC; border-radius: 10px; }
+.linea { position: absolute; left: 0; right: 0; height: 1px; background: var(--borde); }
+.bloque { position: absolute; left: 3px; right: 3px; border-radius: 8px; padding: 6px 8px; text-align: left; overflow: hidden; font-size: 11px; line-height: 1.3; border: 1px solid; cursor: pointer; display: flex; flex-direction: column; gap: 2px; }
+.bloque b { font-size: 12px; }
+.bloque.dni { background: #E6EEF8; border-color: #B9CDEA; color: var(--titulo); }
+.bloque.recojo { background: #E7F4EC; border-color: #B6DBC3; color: #1E5B32; }
+.bloque.todos { background: #E3F5F5; border-color: #A9DEDF; color: #0D5E61; }
+.bloque.previa { background: rgba(11, 79, 156, .1); border: 2px dashed var(--primario); color: var(--primario); cursor: default; z-index: 2; pointer-events: none; }
+.bloque.previa.cruce { background: rgba(198, 40, 40, .1); border-color: var(--error); color: var(--error); }
+.leyenda { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 14px; font-size: 13px; color: var(--texto-3); }
+.leyenda span { display: inline-flex; align-items: center; gap: 6px; }
+.leyenda i { width: 12px; height: 12px; border-radius: 3px; }
+.leyenda .dni { background: #E6EEF8; border: 1px solid #B9CDEA; } .leyenda .recojo { background: #E7F4EC; border: 1px solid #B6DBC3; }
+.leyenda .todos { background: #E3F5F5; border: 1px solid #A9DEDF; } .leyenda .cruce { border: 2px dashed var(--error); }
+.duraciones { list-style: none; padding: 0; margin: 10px 0 0; }
+.duraciones li { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--borde); font-size: 14px; }
+.duraciones li:last-child { border-bottom: 0; }
+@media (max-width: 1100px) { .dos { grid-template-columns: 1fr; } }

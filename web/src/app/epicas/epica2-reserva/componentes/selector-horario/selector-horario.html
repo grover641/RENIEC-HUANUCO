@@ -1,0 +1,53 @@
+<div class="calendario">
+  <div class="cabeza">
+    <button type="button" class="btn btn-icono" (click)="mover(-1)" [disabled]="!puedeAtras()" aria-label="Mes anterior"><app-icono nombre="chevron-left" [tam]="18" /></button>
+    <b>{{ titulo() }}</b>
+    <button type="button" class="btn btn-icono" (click)="mover(1)" aria-label="Mes siguiente"><app-icono nombre="chevron-right" [tam]="18" /></button>
+  </div>
+  <div class="semana">@for (d of ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sá', 'Do']; track d) { <span>{{ d }}</span> }</div>
+  <div class="dias">
+    @for (c of celdas(); track $index) {
+      @if (c) {
+        <button type="button" class="dia" [class]="'dia ' + c.estado" [class.elegido]="fecha() === c.fecha"
+          [disabled]="c.estado === 'pasado' || c.estado === 'lleno'" (click)="elegirDia(c.fecha)"
+          [attr.aria-label]="c.num + (c.estado === 'lleno' ? ', lleno o sin atención' : ', ' + c.libres + ' cupos')">
+          <b>{{ c.num }}</b>
+          @if (c.estado === 'lleno' && c.fecha >= hoy) { <small>Lleno</small> }
+          @if (c.estado === 'pocos') { <small>Pocos</small> }
+        </button>
+      } @else { <span></span> }
+    }
+  </div>
+  <div class="leyenda">
+    <span><i class="l-libre"></i>Con cupos</span><span><i class="l-elegido"></i>Elegido</span>
+    <span class="pocos-txt">Pocos = 6 cupos o menos</span><span><i class="l-lleno"></i>Lleno o sin atención</span>
+  </div>
+</div>
+
+@if (fecha()) {
+  <h3 class="titulo-horas">Horarios del {{ tituloDia() }}</h3>
+  @if (!bloques().length) {
+    <div class="caja-gris texto-2">No hay horarios disponibles ese día. Elige otro.</div>
+  }
+  @if (manana().length) {
+    <span class="franja">Mañana</span>
+    <div class="horas">
+      @for (b of manana(); track b.hora) {
+        <button type="button" class="hora" [class.elegida]="hora() === b.hora" [disabled]="b.libres === 0" (click)="hora.set(b.hora)">
+          <b>{{ b.hora }}</b><small [class.pocos]="b.libres > 0 && b.libres <= 1">{{ b.libres === 0 ? 'Lleno' : b.libres + (b.libres === 1 ? ' cupo' : ' cupos') }}</small>
+        </button>
+      }
+    </div>
+  }
+  @if (tarde().length) {
+    <span class="franja">Tarde</span>
+    <div class="horas">
+      @for (b of tarde(); track b.hora) {
+        <button type="button" class="hora" [class.elegida]="hora() === b.hora" [disabled]="b.libres === 0" (click)="hora.set(b.hora)">
+          <b>{{ b.hora }}</b><small [class.pocos]="b.libres > 0 && b.libres <= 1">{{ b.libres === 0 ? 'Lleno' : b.libres + (b.libres === 1 ? ' cupo' : ' cupos') }}</small>
+        </button>
+      }
+    </div>
+  }
+}
+<div class="aviso aviso-info nota"><app-icono nombre="info" [tam]="18" /><div>Podrás reprogramar o cancelar tu cita hasta 24 horas antes. Los horarios llenos no se pueden elegir.</div></div>
