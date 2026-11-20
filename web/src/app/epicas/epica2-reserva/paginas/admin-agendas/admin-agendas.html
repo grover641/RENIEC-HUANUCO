@@ -1,0 +1,95 @@
+<div class="encabezado-pagina">
+  <div><h1>Agendas y cupos</h1><p>{{ tituloSemana() }} · {{ reservado() }} % de los cupos ya están reservados · {{ cuposSede() }} cupos por día en las 3 ventanillas</p></div>
+  <div class="fila">
+    <button type="button" class="btn btn-icono" (click)="mover(-1)" aria-label="Semana anterior"><app-icono nombre="chevron-left" [tam]="18" /></button>
+    <button type="button" class="btn btn-icono" (click)="mover(1)" aria-label="Semana siguiente"><app-icono nombre="chevron-right" [tam]="18" /></button>
+  </div>
+</div>
+
+<div class="pastillas" role="tablist" aria-label="Ventanillas" style="margin-bottom:16px">
+  @for (v of ventanillas; track v) {
+    <button type="button" class="pastilla" role="tab" [attr.aria-pressed]="ventanilla() === v" [attr.aria-selected]="ventanilla() === v" (click)="ventanilla.set(v); errores.set({})">Ventanilla {{ v }}</button>
+  }
+</div>
+
+<div class="dos">
+  <section class="tarjeta semana">
+    <div class="rejilla-semana">
+      <div class="col-horas"><span class="cabeza"></span>
+        <div class="horas" [style.height.px]="altoTotal">@for (h of horas; track h) { <span [style.top.px]="y(h)">{{ h.slice(0, 5) }}</span> }</div>
+      </div>
+      @for (f of fechas(); track $index) {
+        <div class="col">
+          <span class="cabeza"><b>{{ dia($index + 1) }} {{ f.getDate() }}</b><small>{{ cuposDia()[$index] }} cupos</small></span>
+          <div class="cuerpo" [style.height.px]="altoTotal">
+            @for (h of horas; track h) { <i class="linea" [style.top.px]="y(h)"></i> }
+            @for (fr of delDia($index + 1); track fr.id) {
+              <button type="button" class="bloque" [class]="'bloque ' + fr.tipo" [style.top.px]="y(fr.inicio)" [style.height.px]="alto(fr) - 3" (click)="elegida.set(fr)">
+                <b>{{ fr.inicio }}–{{ fr.fin }}</b><span>{{ nombreFranja[fr.tipo] }} · {{ fr.cupos }} cupos c/30 min</span>
+              </button>
+            }
+            @if (previa(); as p) {
+              @if (p.dia === $index + 1) {
+                <div class="bloque previa" [class.cruce]="p.cruce" [style.top.px]="p.top" [style.height.px]="p.alto - 3"><b>{{ form().inicio }}–{{ form().fin }}</b><span>{{ p.cruce ? 'Se cruza' : 'Nueva franja' }}</span></div>
+              }
+            }
+          </div>
+        </div>
+      }
+    </div>
+    <div class="leyenda">
+      <span><i class="dni"></i>DNI mayores y menores</span><span><i class="recojo"></i>Recojo de DNI</span><span><i class="todos"></i>Todos los trámites</span><span><i class="cruce"></i>Franja que se cruza</span>
+    </div>
+  </section>
+
+  <aside class="pila">
+    <form class="tarjeta" (submit)="guardar($event)" novalidate>
+      <h3>Nueva franja horaria</h3>
+      <div class="pila" style="margin-top:12px;gap:12px">
+        <div class="campo"><label for="ag-dia">Ventanilla y día</label>
+          <select id="ag-dia" class="entrada" (change)="poner('dia', $any($event.target).value)">
+            @for (f of fechas(); track $index) { <option [value]="$index + 1" [selected]="form().dia === $index + 1">Ventanilla {{ ventanilla() }} · {{ dia($index + 1) }} {{ f.getDate() }}</option> }
+          </select>
+          <span class="ayuda">La franja se repite todas las semanas ese mismo día.</span></div>
+        <div class="rejilla-2" style="gap:10px">
+          <div class="campo" [class.con-error]="erroresVisibles()['horario'] || erroresVisibles()['cruce']"><label for="ag-ini">Desde</label>
+            <input id="ag-ini" class="entrada" type="time" step="1800" min="08:00" max="16:30" [value]="form().inicio" (input)="poner('inicio', $any($event.target).value)" /></div>
+          <div class="campo" [class.con-error]="erroresVisibles()['horario'] || erroresVisibles()['cruce']"><label for="ag-fin">Hasta</label>
+            <input id="ag-fin" class="entrada" type="time" step="1800" min="08:00" max="16:30" [value]="form().fin" (input)="poner('fin', $any($event.target).value)" /></div>
+        </div>
+        <div class="rejilla-2" style="gap:10px">
+          <div class="campo"><label for="ag-tipo">Trámite</label>
+            <select id="ag-tipo" class="entrada" (change)="poner('tipo', $any($event.target).value)">
+              @for (t of tipos; track t) { <option [value]="t" [selected]="form().tipo === t">{{ nombreFranja[t] }}</option> }
+            </select></div>
+          <div class="campo" [class.con-error]="erroresVisibles()['cupos']"><label for="ag-cup">Cupos por bloque</label>
+            <input id="ag-cup" class="entrada" type="number" min="1" max="10" [value]="form().cupos" (input)="poner('cupos', $any($event.target).value)" /></div>
+        </div>
+        @for (e of ['horario', 'cruce', 'cupos']; track e) {
+          @if (erroresVisibles()[e]) { <div class="aviso aviso-error"><app-icono nombre="alert-triangle" [tam]="18" /><div>{{ erroresVisibles()[e] }}</div></div> }
+        }
+        <button type="submit" class="btn btn-primario btn-bloque" [disabled]="guardando() || !!erroresVisibles()['cruce'] || !!erroresVisibles()['horario']">
+          @if (guardando()) { <span class="girando"></span>Guardando… } @else { Guardar franja }
+        </button>
+      </div>
+    </form>
+    <section class="tarjeta">
+      <div class="fila-entre"><h3>Duración por trámite</h3><a routerLink="/admin/tramites" class="fuerte texto-sm">Editar</a></div>
+      <ul class="duraciones">@for (t of tramites(); track t.id) { <li><span>{{ t.nombre }}</span><b>{{ t.duracionMin }} min</b></li> }</ul>
+    </section>
+  </aside>
+</div>
+
+@if (elegida(); as f) {
+  <app-modal [titulo]="'Ventanilla ' + f.ventanilla + ' · ' + dia(f.dia)" [subtitulo]="f.inicio + ' a ' + f.fin + ' · ' + nombreFranja[f.tipo]" icono="calendar-clock" [ancho]="460" (cerrar)="elegida.set(null)">
+    <div class="rejilla-2">
+      <div class="caja-gris"><span class="texto-xs texto-2">Bloques de 30 min</span><br /><b>{{ bloques(f) }}</b></div>
+      <div class="caja-gris"><span class="texto-xs texto-2">Cupos de la franja</span><br /><b>{{ bloques(f) * f.cupos }} ({{ f.cupos }} por bloque)</b></div>
+    </div>
+    <p class="texto-sm texto-2" style="margin-top:12px">Si hay citas reservadas en esta franja, primero hay que reprogramarlas.</p>
+    <div pie>
+      <button type="button" class="btn btn-fantasma" (click)="elegida.set(null)">Cerrar</button>
+      <button type="button" class="btn btn-peligro" (click)="eliminar(f)"><app-icono nombre="trash" [tam]="18" />Eliminar franja</button>
+    </div>
+  </app-modal>
+}

@@ -1,0 +1,149 @@
+@if (confirmada()) { <div class="solo-imprimir"><app-logo [tam]="40" /><span>Comprobante de cita · Proyecto académico · no es un sitio oficial de RENIEC</span></div> }
+<nav class="migas texto-sm no-imprimir" aria-label="Ruta"><a routerLink="/ciudadano/inicio">Mi inicio</a><app-icono nombre="chevron-right" [tam]="14" /><span>Reservar cita</span></nav>
+<div class="encabezado-pagina no-imprimir">
+  <div><h1>Reserva tu cita</h1>
+    <p>@switch (paso()) {
+      @case (1) { Paso 1 de 3 · Elige el trámite que vas a realizar. }
+      @case (2) { Paso 2 de 3 · Elige el día y la hora que prefieras. }
+      @case (3) { Paso 3 de 3 · Revisa los datos y confirma tu cita. }
+      @default { Listo. Tu cita quedó registrada. }
+    }</p></div>
+</div>
+
+@if (paso() < 4) {
+  <ol class="pasos tarjeta-plana">
+    @for (p of [{ n: 1, t: 'Elige tu trámite' }, { n: 2, t: 'Elige día y hora' }, { n: 3, t: 'Confirma' }]; track p.n) {
+      <li [class.hecho]="paso() > p.n" [class.actual]="paso() === p.n">
+        <span class="bolita">@if (paso() > p.n) { <app-icono nombre="check" [tam]="16" /> } @else { {{ p.n }} }</span>{{ p.t }}
+      </li>
+    }
+  </ol>
+
+  <div class="dos-columnas">
+    <section class="tarjeta principal">
+      @switch (paso()) {
+        @case (1) {
+          <div class="fila-entre"><h3>1. Elige tu trámite</h3>
+            <div class="entrada-icono buscar"><app-icono nombre="search" [tam]="18" />
+              <input class="entrada" type="search" placeholder="Buscar trámite" aria-label="Buscar trámite" [value]="busqueda()" (input)="busqueda.set($any($event.target).value)" /></div>
+          </div>
+          <div class="pastillas categorias" role="group" aria-label="Categorías">
+            @for (c of categorias(); track c.nombre) {
+              <button type="button" class="pastilla" [attr.aria-pressed]="categoria() === c.nombre" (click)="categoria.set(c.nombre)">{{ c.nombre }} <span class="n">{{ c.n }}</span></button>
+            }
+          </div>
+          <div class="catalogo">
+            @for (t of lista(); track t.id) {
+              <article class="producto" [class.marcado]="elegido()?.id === t.id">
+                <span class="icono-caja" [class]="'icono-caja ' + t.tono"><app-icono [nombre]="t.icono" [tam]="22" /></span>
+                <h4>{{ t.nombre }}</h4>
+                <p class="texto-2 texto-sm">{{ t.descripcion }}</p>
+                <span class="datos"><span><app-icono nombre="clock" [tam]="15" />{{ t.duracionMin }} min</span><span><app-icono nombre="banknote" [tam]="15" />{{ soles(t.costo) }}</span></span>
+                <div class="acciones">
+                  <button type="button" class="btn-enlace" (click)="detalle.set(t)">Ver detalle y requisitos <app-icono nombre="arrow-right" [tam]="14" /></button>
+                  <button type="button" class="btn btn-secundario btn-chico" (click)="elegir(t)">Elegir</button>
+                </div>
+              </article>
+            } @empty {
+              <div class="caja-gris texto-2">No encontramos ese trámite.</div>
+            }
+          </div>
+        }
+        @case (2) {
+          <div class="fila-entre"><h3>2. Elige día y hora</h3><button type="button" class="btn-enlace" (click)="paso.set(1)"><app-icono nombre="arrow-left" [tam]="14" /> Cambiar trámite</button></div>
+          @if (sugerencias().length) {
+            <div class="aviso aviso-advertencia" style="margin:12px 0"><app-icono nombre="alert-triangle" /><div><strong>Ese horario se acaba de llenar</strong>Horarios cercanos con cupo:
+              @for (s of sugerencias(); track s) { <button type="button" class="pastilla mini" (click)="hora.set(s); sugerencias.set([])">{{ s }}</button> }</div></div>
+          }
+          <div style="margin-top:14px"><app-selector-horario [tramiteId]="elegido()!.id" [(fecha)]="fecha" [(hora)]="hora" /></div>
+        }
+        @case (3) {
+          <div class="fila-entre"><h3>3. Revisa y confirma</h3><button type="button" class="btn-enlace" (click)="paso.set(2)"><app-icono nombre="arrow-left" [tam]="14" /> Cambiar día u hora</button></div>
+          <div class="rejilla-2" style="margin-top:14px">
+            <div class="caja-gris"><span class="et">Trámite</span><b>{{ elegido()?.nombre }}</b><small>{{ elegido()?.duracionMin }} min aprox. · {{ soles(elegido()?.costo ?? null) }}</small></div>
+            <div class="caja-gris"><span class="et">Fecha y hora</span><b>{{ fechaTexto() }}</b><small>{{ hora() }} · llega 10 min antes</small></div>
+          </div>
+          <div class="tarjeta-plana datos-ciudadano">
+            <b>Tus datos</b>
+            <div class="rejilla-3"><div><span class="et">Nombre</span>{{ usuario()?.nombres }} {{ usuario()?.apellidos }}</div>
+              <div><span class="et">DNI</span>{{ enmascararDni(usuario()?.dni ?? '') }}</div><div><span class="et">Celular</span>{{ enmascararCelular(usuario()?.celular ?? '') }}</div></div>
+          </div>
+          <fieldset class="tarjeta-plana canal">
+            <legend>¿Por dónde te avisamos?</legend>
+            <div class="rejilla-2">
+              <label class="opcion" [class.activa]="canal() === 'whatsapp'"><input type="radio" name="canal" [checked]="canal() === 'whatsapp'" (change)="canal.set('whatsapp')" />
+                <app-icono nombre="message" /><span><b>WhatsApp</b><small>{{ enmascararCelular(usuario()?.celular ?? '') }} · recomendado</small></span></label>
+              <label class="opcion" [class.activa]="canal() === 'sms'"><input type="radio" name="canal" [checked]="canal() === 'sms'" (change)="canal.set('sms')" />
+                <app-icono nombre="sms" /><span><b>SMS</b><small>{{ enmascararCelular(usuario()?.celular ?? '') }}</small></span></label>
+            </div>
+            <label class="casilla" style="margin-top:12px"><input type="checkbox" [checked]="aceptaAvisos()" (change)="aceptaAvisos.set($any($event.target).checked)" />
+              <span>Acepto recibir avisos de mi cita y de mi DNI: confirmación, recordatorio 24 h antes, cambios y «DNI listo». Puedo retirar mi consentimiento en Mis avisos (Ley N.º 29733).</span></label>
+            @if (!aceptaAvisos() && !yaConsiente()) { <p class="texto-xs texto-2" style="margin-top:6px">Sin tu consentimiento no te enviaremos mensajes. Igual podrás ver tu cita y tu turno en la web.</p> }
+          </fieldset>
+          <div class="llevar"><b><app-icono nombre="list-checks" [tam]="18" />Qué debes llevar</b>
+            <ul>@for (r of elegido()?.requisitos ?? []; track r) { <li>{{ r }}</li> }</ul></div>
+        }
+      }
+    </section>
+
+    <aside class="tarjeta resumen">
+      <h3><span class="icono-caja chico"><app-icono nombre="clipboard" [tam]="18" /></span>Resumen de tu cita</h3>
+      <dl>
+        <div><dt><app-icono nombre="file-text" [tam]="16" />Trámite</dt><dd>{{ elegido()?.nombre ?? 'Por elegir' }}
+          @if (elegido() && paso() > 1) { <button type="button" class="btn-enlace cambiar" (click)="paso.set(1)">Cambiar</button> }</dd></div>
+        <div><dt><app-icono nombre="calendar" [tam]="16" />Fecha</dt><dd>{{ fechaTexto() || 'Por elegir' }}</dd></div>
+        <div><dt><app-icono nombre="clock" [tam]="16" />Hora</dt><dd>{{ hora() ?? 'Por elegir' }}</dd></div>
+        <div><dt><app-icono nombre="map-pin" [tam]="16" />Sede</dt><dd>{{ sede.nombre }}<small>Jr. General Prado, Huánuco</small></dd></div>
+      </dl>
+      <div class="costo"><span>Costo del trámite</span><b>{{ elegido() ? soles(elegido()!.costo) : '—' }}</b></div>
+      <p class="texto-xs texto-2">Paga la tasa antes de tu cita en Banco de la Nación, Págalo.pe o Yape.</p>
+      <button type="button" class="btn btn-primario btn-bloque btn-grande" [disabled]="!puedeContinuar()" (click)="continuar()">
+        @if (enviando()) { <span class="girando"></span>Confirmando… } @else if (paso() === 3) { Confirmar cita <app-icono nombre="arrow-right" [tam]="18" /> } @else { Continuar <app-icono nombre="arrow-right" [tam]="18" /> }
+      </button>
+      <p class="texto-xs texto-2 nota"><app-icono nombre="info" [tam]="14" />Puedes reprogramar o cancelar hasta 24 h antes.</p>
+    </aside>
+  </div>
+} @else if (confirmada(); as c) {
+  <section class="tarjeta confirmacion">
+    <span class="check"><app-icono nombre="check" [tam]="40" [trazo]="2.6" /></span>
+    <h2>¡Tu cita está confirmada!</h2>
+    <p class="texto-2">Guarda tu código: lo usarás para hacer check-in en la sede.</p>
+    <div class="codigo"><span>Código de cita</span><b>{{ c.codigo }}</b>
+      <button type="button" class="btn btn-secundario btn-chico no-imprimir" (click)="copiar(c.codigo)"><app-icono nombre="copy" [tam]="16" />Copiar</button></div>
+    <div class="rejilla-4 datos-cita">
+      <div class="caja-gris"><span class="et">Trámite</span><b>{{ elegido()?.nombre }}</b></div>
+      <div class="caja-gris"><span class="et">Fecha</span><b>{{ fechaTexto() }}</b></div>
+      <div class="caja-gris"><span class="et">Hora</span><b>{{ c.hora }}</b></div>
+      <div class="caja-gris"><span class="et">Sede</span><b>Huánuco · V{{ c.ventanilla }}</b></div>
+    </div>
+    @if (canalConfirmacion(); as canalUsado) {
+      <div class="aviso aviso-exito"><app-icono nombre="message" /><div>Te enviamos la confirmación por {{ canalUsado }} al {{ enmascararCelular(usuario()?.celular ?? '') }}. Te recordaremos tu cita 24 horas antes.</div></div>
+    } @else {
+      <div class="aviso aviso-info"><app-icono nombre="info" /><div>Esta vez no te enviamos un mensaje (revisa tus preferencias en «Mis avisos»). Tu cita igual quedó registrada en «Mis citas».</div></div>
+    }
+    <div class="fila centro no-imprimir">
+      <button type="button" class="btn btn-primario" (click)="imprimir()"><app-icono nombre="download" [tam]="18" />Descargar comprobante</button>
+      <a class="btn btn-secundario" routerLink="/ciudadano/citas"><app-icono nombre="calendar" [tam]="18" />Ver mis citas</a>
+    </div>
+    <p class="texto-sm texto-2">El día de tu cita, llega 10 minutos antes, haz check-in con tu código o DNI y sigue tu turno en «Mi turno».</p>
+    <button type="button" class="btn-enlace texto-sm no-imprimir" (click)="nueva()">Reservar otra cita</button>
+  </section>
+}
+
+@if (detalle(); as t) {
+  <app-modal [titulo]="t.nombre" [subtitulo]="t.descripcion" [icono]="t.icono" [tono]="t.tono" (cerrar)="detalle.set(null)">
+    <span class="insignia insignia-azul" style="margin-bottom:12px">{{ t.categoria }}</span>
+    <div class="rejilla-3" style="margin-bottom:16px">
+      <div class="caja-gris"><span class="et">Costo</span><b>{{ soles(t.costo) }}</b></div>
+      <div class="caja-gris"><span class="et">Duración</span><b>{{ t.duracionMin }} min</b></div>
+      <div class="caja-gris"><span class="et">Sede</span><b>Huánuco</b></div>
+    </div>
+    <b>Requisitos</b>
+    <ul class="requisitos">@for (r of t.requisitos; track r) { <li><app-icono nombre="check-circle" [tam]="16" />{{ r }}</li> }</ul>
+    <div class="aviso" style="background:var(--secundario-suave);color:#8A0F33;margin-top:14px"><app-icono nombre="accessibility" /><div>Atención preferente para gestantes, adultos mayores y personas con discapacidad (Ley N.º 28683).</div></div>
+    <div pie>
+      <button type="button" class="btn btn-fantasma" (click)="detalle.set(null)">Cancelar</button>
+      <button type="button" class="btn btn-primario" (click)="elegir(t)"><app-icono nombre="calendar-plus" [tam]="18" />Reservar este trámite</button>
+    </div>
+  </app-modal>
+}
