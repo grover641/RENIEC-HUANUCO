@@ -1,0 +1,88 @@
+<div class="encabezado-pagina">
+  <div><h1>Check-in</h1><p>{{ cabecera() }} · busca la cita y emite el turno</p></div>
+</div>
+
+<form class="tarjeta buscador" (submit)="buscar($event)" novalidate>
+  <label for="ci-q" class="etiqueta">Código de cita o DNI</label>
+  <div class="fila" style="flex-wrap:nowrap">
+    <div class="entrada-icono" style="flex:1"><app-icono nombre="scan" />
+      <input id="ci-q" class="entrada mayus" placeholder="Ej.: CR-4K7PQ o 42551234" autocomplete="off" [value]="texto()" (input)="texto.set($any($event.target).value)" /></div>
+    <button type="submit" class="btn btn-primario"><app-icono nombre="search" [tam]="18" />Buscar</button>
+  </div>
+  <p class="texto-xs texto-2 prueba">Para la demostración: <button type="button" (click)="probar('CR-4K7PQ')">CR-4K7PQ</button> (a tiempo) ·
+    <button type="button" (click)="probar('CR-4M2T8')">CR-4M2T8</button> (llegó tarde) · <button type="button" (click)="probar('40512345')">40512345</button> (sin cita)</p>
+  @if (error()) { <div class="aviso aviso-error" style="margin-top:12px"><app-icono nombre="x-circle" /><div>{{ error() }}</div></div> }
+</form>
+
+@if (emitido(); as t) {
+  <section class="tarjeta emitido">
+    <span class="et">Turno emitido</span>
+    <b class="numero">{{ t.numero }}</b>
+    <p class="destino"><app-icono nombre="arrow-right" [tam]="22" />Ventanilla {{ t.ventanilla }}</p>
+    <p class="texto-3">{{ t.nombre }} · {{ tramite(t.tramiteId) }}@if (t.prioridad) { · <span class="insignia insignia-guinda">{{ etiqueta[t.prioridad] }}</span> }</p>
+    <p class="texto-sm texto-2">Indica al ciudadano que siga su turno en la pantalla de sala o en «Mi turno» con el código {{ t.numero }}.</p>
+    <div class="fila" style="justify-content:center"><a class="btn btn-secundario" routerLink="/operador/panel">Ver la cola</a><button type="button" class="btn btn-primario" (click)="emitido.set(null)">Siguiente check-in</button></div>
+  </section>
+}
+
+@if (resultado(); as r) {
+  <div class="dos">
+    @if (r.tipo === 'cita') {
+      <section class="tarjeta">
+        <div class="fila-entre"><h3>Cita encontrada</h3>
+          @if (r.yaTieneTurno) { <span class="insignia insignia-azul">Ya tiene el turno {{ r.yaTieneTurno.numero }}</span> }
+          @else if (r.fueraDeHorario) { <span class="insignia insignia-roja"><app-icono nombre="clock" [tam]="14" />Fuera de horario</span> }
+          @else { <span class="insignia insignia-verde"><app-icono nombre="check" [tam]="14" />Dentro del horario</span> }
+        </div>
+        <div class="rejilla-3 datos">
+          <div><span class="et2">Ciudadana(o)</span><b>{{ r.cita.nombre }}</b></div>
+          <div><span class="et2">DNI</span><b>{{ enmascararDni(r.cita.dni) }}</b></div>
+          <div><span class="et2">Trámite</span><b>{{ tramite(r.cita.tramiteId) }} · {{ duracion(r.cita.tramiteId) }} min</b></div>
+          <div><span class="et2">Cita</span><b>{{ r.cita.hora }} · código {{ r.cita.codigo }}</b></div>
+          <div><span class="et2">Ventanilla</span><b>Ventanilla {{ r.cita.ventanilla }}</b></div>
+        </div>
+        @if (!r.yaTieneTurno && (!r.fueraDeHorario || permitirTarde())) {
+          <span class="etiqueta">Prioridad (Ley N.º 28683)</span>
+          <div class="opciones">
+            @for (o of opciones; track o.texto) {
+              <button type="button" class="opcion" [class.activa]="prioridad() === o.v" (click)="prioridad.set(o.v)"><app-icono [nombre]="o.icono" [tam]="18" />{{ o.texto }}</button>
+            }
+          </div>
+          <button type="button" class="btn btn-primario btn-bloque btn-grande" [disabled]="ocupado()" (click)="emitir()"><app-icono nombre="ticket" />Emitir turno</button>
+        } @else if (r.yaTieneTurno) {
+          <p class="texto-3">Esta cita ya hizo check-in. Puede seguir su turno con el código {{ r.yaTieneTurno.numero }}.</p>
+        }
+      </section>
+    } @else {
+      <section class="tarjeta">
+        <h3>Atención por orden de llegada</h3>
+        <p class="texto-3" style="margin:6px 0 14px">El DNI {{ enmascararDni(r.dni) }} no tiene una cita para hoy. Puedes atenderlo por orden de llegada si hay espacio en la cola.</p>
+        <div class="rejilla-2" style="gap:10px;margin-bottom:14px">
+          <div class="campo"><label for="sc-nom">Nombre (opcional)</label><input id="sc-nom" class="entrada" [value]="sinCitaNombre()" (input)="sinCitaNombre.set($any($event.target).value)" /></div>
+          <div class="campo"><label for="sc-tr">Trámite</label><select id="sc-tr" class="entrada" (change)="sinCitaTramite.set($any($event.target).value)">
+            @for (t of tramites; track t.id) { <option [value]="t.id" [selected]="sinCitaTramite() === t.id">{{ t.nombre }}</option> }</select></div>
+        </div>
+        <span class="etiqueta">Prioridad (Ley N.º 28683)</span>
+        <div class="opciones">@for (o of opciones; track o.texto) { <button type="button" class="opcion" [class.activa]="prioridad() === o.v" (click)="prioridad.set(o.v)"><app-icono [nombre]="o.icono" [tam]="18" />{{ o.texto }}</button> }</div>
+        <button type="button" class="btn btn-primario btn-bloque btn-grande" [disabled]="ocupado()" (click)="emitir()"><app-icono nombre="ticket" />Atender sin cita</button>
+      </section>
+    }
+
+    <aside class="pila">
+      <span class="et">Otros resultados posibles</span>
+      @if (r.tipo === 'sin-cita') {
+        <div class="tarjeta-plana caso naranja"><b><app-icono nombre="calendar-x" [tam]="18" />Sin cita para hoy</b>
+          <p>El DNI no tiene una cita reservada para hoy. Ofrece reservar el próximo cupo desde la web o atiéndelo sin cita.</p></div>
+      }
+      @if (r.tipo === 'cita' && r.fueraDeHorario && !r.yaTieneTurno) {
+        <div class="tarjeta-plana caso rojo"><b><app-icono nombre="clock" [tam]="18" />Fuera de horario</b>
+          <p>La cita {{ r.cita.codigo }} era a las {{ r.cita.hora }} y la tolerancia es de {{ tolerancia }} minutos. Si lo atiendes hoy, entra a la cola por orden de llegada, después de las citas puntuales.</p>
+          <div class="fila" style="margin-top:8px">
+            <button type="button" class="btn btn-secundario btn-chico" (click)="permitirTarde.set(true)">Atender por orden de llegada</button>
+          </div></div>
+      }
+      <div class="tarjeta-plana caso"><b><app-icono nombre="info" [tam]="18" />Recuerda</b>
+        <p>La atención preferente (gestantes, adultos mayores y personas con discapacidad) pasa primero en la cola.</p></div>
+    </aside>
+  </div>
+}
