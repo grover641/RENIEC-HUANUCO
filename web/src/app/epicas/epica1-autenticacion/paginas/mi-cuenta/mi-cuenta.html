@@ -1,0 +1,97 @@
+<div class="pila-cuenta">
+  @if (usuario()?.debeCambiarClave) {
+    <div class="aviso aviso-advertencia" role="alert">
+      <app-icono nombre="key" [tam]="24" />
+      <div><strong>Cambia tu contraseña temporal</strong>El administrador restableció tu contraseña. Para usar las demás opciones, crea una contraseña propia abajo.</div>
+    </div>
+  }
+  <div class="encabezado-pagina" style="margin-bottom:0">
+    <div><h1>{{ usuario()?.rol === 'ciudadano' ? 'Mi cuenta' : 'Mi perfil' }}</h1><p>Tus datos están protegidos según la Ley N.º 29733.</p></div>
+  </div>
+
+  <section class="tarjeta perfil">
+    <span class="avatar avatar-lg" [style.background]="usuario()?.rol === 'administrador' ? '#B0123E' : '#0B4F9C'">{{ ini() }}</span>
+    <div>
+      <h2>{{ usuario()?.nombres }} {{ usuario()?.apellidos }}</h2>
+      <p class="texto-3">DNI <b>{{ enmascararDni(usuario()?.dni ?? '') }}</b> · {{ rolTexto() }} desde {{ desde() }}</p>
+    </div>
+    <span class="candado"><app-icono nombre="lock" [tam]="15" />El nombre y el DNI no se pueden editar</span>
+  </section>
+
+  <form class="tarjeta" (submit)="guardarContacto($event)" novalidate>
+    <h3>Datos de contacto</h3>
+    <div class="rejilla-2">
+      <div class="campo" [class.con-error]="erroresContacto()['correo']">
+        <label for="mc-correo">Correo electrónico</label>
+        <input id="mc-correo" class="entrada" type="email" autocomplete="email" [value]="correo()" (input)="correo.set($any($event.target).value)" />
+        @if (erroresContacto()['correo']) { <span class="error">{{ erroresContacto()['correo'] }}</span> }
+      </div>
+      <div class="campo" [class.con-error]="erroresContacto()['celular']">
+        <label for="mc-cel">Celular para avisos</label>
+        <input id="mc-cel" class="entrada" inputmode="numeric" maxlength="11" autocomplete="tel" [value]="celular()" (input)="celular.set($any($event.target).value)" />
+        @if (erroresContacto()['celular']) { <span class="error">{{ erroresContacto()['celular'] }}</span> }
+        @else { <span class="ayuda">Aquí te llegarán los avisos por WhatsApp o SMS.</span> }
+      </div>
+    </div>
+    <div class="pie-form">
+      <button type="submit" class="btn btn-primario" [disabled]="guardandoContacto()">
+        @if (guardandoContacto()) { <span class="girando"></span>Guardando… } @else { Guardar cambios }
+      </button>
+    </div>
+  </form>
+
+  <form class="tarjeta" [class.resaltada]="usuario()?.debeCambiarClave" (submit)="guardarClave($event)" novalidate>
+    <h3>{{ usuario()?.debeCambiarClave ? 'Crea tu contraseña' : 'Cambiar contraseña' }}</h3>
+    <div class="rejilla-3">
+      <div class="campo" [class.con-error]="erroresClave()['actual']">
+        <label for="mc-a">{{ usuario()?.debeCambiarClave ? 'Contraseña temporal' : 'Contraseña actual' }}</label>
+        <app-campo-clave idCampo="mc-a" [conIcono]="false" [placeholder]="usuario()?.debeCambiarClave ? 'La que te enviamos al correo' : 'Tu contraseña actual'" [(valor)]="actual" [conError]="!!erroresClave()['actual']" />
+        @if (erroresClave()['actual']) { <span class="error">{{ erroresClave()['actual'] }}</span> }
+      </div>
+      <div class="campo" [class.con-error]="erroresClave()['nueva']">
+        <label for="mc-n">Nueva contraseña</label>
+        <app-campo-clave idCampo="mc-n" [conIcono]="false" placeholder="Mínimo 8 caracteres" autocompletar="new-password" [(valor)]="nueva" [conError]="!!erroresClave()['nueva']" />
+        @if (erroresClave()['nueva']) { <span class="error">{{ erroresClave()['nueva'] }}</span> }
+      </div>
+      <div class="campo" [class.con-error]="erroresClave()['confirmar']">
+        <label for="mc-c">Confirmar nueva contraseña</label>
+        <app-campo-clave idCampo="mc-c" [conIcono]="false" placeholder="Escríbela otra vez" autocompletar="new-password" [(valor)]="confirmar" [conError]="!!erroresClave()['confirmar']" />
+        @if (erroresClave()['confirmar']) { <span class="error">{{ erroresClave()['confirmar'] }}</span> }
+      </div>
+    </div>
+    <div class="pie-form">
+      <span class="texto-sm texto-2">Por seguridad, la sesión se cierra tras 30 minutos sin actividad.</span>
+      <button type="submit" class="btn btn-secundario" [disabled]="guardandoClave()">
+        @if (guardandoClave()) { <span class="girando"></span>Actualizando… } @else { Actualizar contraseña }
+      </button>
+    </div>
+  </form>
+
+  @if (usuario()?.rol === 'ciudadano') {
+    <section class="tarjeta peligro">
+      <span class="icono-caja roja"><app-icono nombre="alert-triangle" [tam]="22" /></span>
+      <div style="flex:1;min-width:240px"><h3>Zona de peligro</h3>
+        <p>Eliminar tu cuenta borra tus datos de contacto y cancela tus citas futuras. Tu historial de trámites se conserva como exige la ley.</p></div>
+      <button type="button" class="btn btn-peligro" (click)="abrirBaja()"><app-icono nombre="trash" [tam]="18" />Eliminar mi cuenta</button>
+    </section>
+  }
+</div>
+
+@if (confirmarBaja()) {
+  <app-modal titulo="¿Eliminar tu cuenta?" subtitulo="Esta acción no se puede deshacer." icono="trash" tono="roja" [ancho]="480" (cerrar)="confirmarBaja.set(false)">
+    <form id="form-baja" class="pila" (submit)="eliminar($event)" novalidate>
+      <p class="texto-3">Se anonimizarán tus datos personales, se cancelarán tus citas futuras y se cerrarán tus sesiones. Para confirmar, escribe tu contraseña.</p>
+      <div class="campo" [class.con-error]="errorBaja()">
+        <label for="baja-clave">Contraseña</label>
+        <app-campo-clave idCampo="baja-clave" [(valor)]="claveBaja" [conError]="!!errorBaja()" />
+        @if (errorBaja()) { <span class="error">{{ errorBaja() }}</span> }
+      </div>
+    </form>
+    <div pie>
+      <button type="button" class="btn btn-fantasma" (click)="confirmarBaja.set(false)">No, volver</button>
+      <button type="submit" form="form-baja" class="btn btn-peligro-lleno" [disabled]="!claveBaja() || eliminando()">
+        @if (eliminando()) { <span class="girando"></span>Eliminando… } @else { Sí, eliminar mi cuenta }
+      </button>
+    </div>
+  </app-modal>
+}

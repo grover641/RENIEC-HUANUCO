@@ -1,0 +1,54 @@
+<div [class.compacta]="compacta()">
+  @if (compacta()) { <h2>Ingresa a tu cuenta</h2> } @else { <h1>Ingresa a tu cuenta</h1> }
+  <p class="bajada">Reserva, reprograma y sigue tu turno desde aquí.</p>
+
+  @switch (estado().tipo) {
+    @case ('error') {
+      <div class="aviso aviso-error" role="alert">
+        <app-icono nombre="x-circle" />
+        <div><strong>No pudimos iniciar sesión</strong>
+          @if ($any(estado()).texto) { {{ $any(estado()).texto }} } @else { El DNI, el correo o la contraseña no son correctos. Revisa tus datos e inténtalo otra vez. }
+        </div>
+      </div>
+    }
+    @case ('quedan') {
+      <div class="aviso aviso-advertencia" role="alert">
+        <app-icono nombre="alert-triangle" />
+        <div><strong>Datos incorrectos: te quedan {{ $any(estado()).quedan }} {{ $any(estado()).quedan === 1 ? 'intento' : 'intentos' }}</strong>
+          Si fallas {{ max }} veces seguidas, bloquearemos tu cuenta por 15 minutos para protegerla.</div>
+      </div>
+    }
+    @case ('bloqueado') {
+      <div class="aviso aviso-error" role="alert">
+        <app-icono nombre="lock" />
+        <div><strong>Cuenta bloqueada por 15 minutos</strong>
+          Superaste los {{ max }} intentos permitidos. Podrás intentarlo otra vez a las {{ horaDesbloqueo() }} o <a routerLink="/recuperar">recuperar tu contraseña</a>.</div>
+      </div>
+    }
+  }
+
+  <form (submit)="enviar($event)" novalidate>
+    <div class="campo" [class.con-error]="conError()">
+      <label for="ing-id">DNI o correo electrónico</label>
+      <div class="entrada-icono">
+        <app-icono nombre="id-card" [tam]="20" />
+        <input id="ing-id" class="entrada" type="text" autocomplete="username" placeholder="Ej.: 41234578 o tu correo"
+          [value]="identificador()" (input)="cambioIdentificador($any($event.target).value)" [disabled]="bloqueado()" />
+      </div>
+    </div>
+    <div class="campo" [class.con-error]="conError()">
+      <label for="ing-clave">Contraseña</label>
+      <app-campo-clave idCampo="ing-clave" [(valor)]="clave" [conError]="conError()" [deshabilitado]="bloqueado()" />
+      @if (estado().tipo === 'quedan') { <span class="error">Intento {{ $any(estado()).intento }} de {{ max }}. Revisa mayúsculas y minúsculas.</span> }
+      @if (estado().tipo === 'error' && !$any(estado()).texto) { <span class="error">Revisa mayúsculas y minúsculas.</span> }
+    </div>
+    <a class="olvido" routerLink="/recuperar">¿Olvidaste tu contraseña?</a>
+    <button type="submit" class="btn btn-primario btn-bloque btn-grande" [disabled]="cargando() || bloqueado()">
+      @if (cargando()) { <span class="girando"></span>Ingresando… }
+      @else if (bloqueado()) { Ingresar · disponible a las {{ horaDesbloqueo() }} }
+      @else { Ingresar }
+    </button>
+  </form>
+  <div class="separador">¿Aún no tienes cuenta?</div>
+  <a class="btn btn-secundario btn-bloque btn-grande" routerLink="/registro">Crear cuenta</a>
+</div>

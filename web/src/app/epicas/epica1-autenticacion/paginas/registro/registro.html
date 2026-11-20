@@ -1,0 +1,77 @@
+<app-marco-acceso>
+  <span derecha>¿Ya tienes cuenta? <a routerLink="/ingresar" class="subrayado">Ingresa</a></span>
+  <section class="acceso-tarjeta ancha">
+    <h1>Crea tu cuenta de ciudadano</h1>
+    <p class="bajada">Para reservar citas, seguir tu turno y recibir avisos. El personal de la sede recibe su cuenta del administrador.</p>
+
+    @if (cantidadErrores() > 0) {
+      <div class="aviso aviso-error" role="alert">
+        <app-icono nombre="alert-circle" />
+        <div><b>Revisa {{ cantidadErrores() }} {{ cantidadErrores() === 1 ? 'campo' : 'campos' }}</b> marcados en rojo para continuar.</div>
+      </div>
+    }
+
+    <form (submit)="enviar($event)" novalidate>
+      <div class="rejilla-2">
+        <div class="campo" [class.con-error]="errores()['dni']" [class.valido]="dniValido()">
+          <label for="r-dni">DNI *</label>
+          <input #dni id="r-dni" class="entrada" inputmode="numeric" maxlength="8" placeholder="8 dígitos" autocomplete="off"
+            (input)="soloDigitos('dni', dni.value, 8, dni)" />
+          @if (errores()['dni']) { <span class="error">{{ errores()['dni'] }}</span> }
+          @else if (dniValido()) { <span class="ok"><app-icono nombre="check-circle" [tam]="15" />DNI válido</span> }
+        </div>
+        <div class="campo" [class.con-error]="errores()['celular']">
+          <label for="r-cel">Celular *</label>
+          <input #cel id="r-cel" class="entrada" inputmode="numeric" maxlength="9" placeholder="Ej.: 987654321" autocomplete="tel"
+            (input)="soloDigitos('celular', cel.value, 9, cel)" />
+          @if (errores()['celular']) { <span class="error">{{ errores()['celular'] }}</span> }
+        </div>
+        <div class="campo" [class.con-error]="errores()['nombres']">
+          <label for="r-nom">Nombres *</label>
+          <input id="r-nom" class="entrada" autocomplete="given-name" placeholder="Ej.: Luis Alberto" (input)="poner('nombres', $any($event.target).value)" />
+          @if (errores()['nombres']) { <span class="error">{{ errores()['nombres'] }}</span> }
+        </div>
+        <div class="campo" [class.con-error]="errores()['apellidos']">
+          <label for="r-ape">Apellidos *</label>
+          <input id="r-ape" class="entrada" autocomplete="family-name" placeholder="Ej.: Ramos Quispe" (input)="poner('apellidos', $any($event.target).value)" />
+          @if (errores()['apellidos']) { <span class="error">{{ errores()['apellidos'] }}</span> }
+        </div>
+      </div>
+      <div class="campo" [class.con-error]="errores()['correo']">
+        <label for="r-correo">Correo electrónico *</label>
+        <input id="r-correo" class="entrada" type="email" autocomplete="email" placeholder="nombre@correo.com" (input)="poner('correo', $any($event.target).value)" />
+        @if (errores()['correo']) { <span class="error">{{ errores()['correo'] }}</span> }
+      </div>
+      <div class="rejilla-2">
+        <div class="campo" [class.con-error]="errores()['clave']">
+          <label for="r-clave">Contraseña *</label>
+          <app-campo-clave idCampo="r-clave" [conIcono]="false" placeholder="Mínimo 8 caracteres" autocompletar="new-password"
+            [(valor)]="clave" [conError]="!!errores()['clave']" />
+          <div class="medidor" [class.debil]="nivel() < 3" aria-hidden="true">
+            @for (i of [1, 2, 3, 4]; track i) { <span [class.lleno]="nivel() >= i"></span> }
+          </div>
+          @if (errores()['clave']) { <span class="error">{{ errores()['clave'] }}</span> }
+          @else { <span class="ayuda" [class.ok]="nivel() >= 3">{{ nivel() >= 3 ? 'Contraseña segura' : 'Mínimo 8 caracteres' }} · se recomienda una mayúscula y un número</span> }
+        </div>
+        <div class="campo" [class.con-error]="errores()['confirmar']">
+          <label for="r-conf">Confirmar contraseña *</label>
+          <app-campo-clave idCampo="r-conf" [conIcono]="false" placeholder="Escríbela otra vez" autocompletar="new-password"
+            [(valor)]="confirmar" [conError]="!!errores()['confirmar']" />
+          @if (errores()['confirmar']) { <span class="error">{{ errores()['confirmar'] }}</span> }
+        </div>
+      </div>
+      <div class="acepta">
+        <label class="casilla">
+          <input type="checkbox" (change)="poner('aceptaDatos', $any($event.target).checked)" />
+          <span>Acepto el tratamiento de mis datos personales para gestionar mis citas y avisos, según la Ley N.º 29733 y la
+            <a routerLink="/privacidad" target="_blank">Política de privacidad</a>. *</span>
+        </label>
+        @if (errores()['aceptaDatos']) { <span class="error texto-xs" style="display:block;margin:6px 0 0 32px">{{ errores()['aceptaDatos'] }}</span> }
+      </div>
+      <button type="submit" class="btn btn-primario btn-bloque btn-grande" [disabled]="cargando()">
+        @if (cargando()) { <span class="girando"></span>Creando tu cuenta… } @else { <app-icono nombre="user-plus" />Crear cuenta }
+      </button>
+      <p class="nota">Tu DNI y tu celular se mostrarán enmascarados en el sistema (por ejemplo, 4123****).</p>
+    </form>
+  </section>
+</app-marco-acceso>

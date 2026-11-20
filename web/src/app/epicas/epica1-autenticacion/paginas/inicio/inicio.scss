@@ -1,0 +1,79 @@
+.portada {
+  color: #fff;
+  background: linear-gradient(90deg, rgba(10, 35, 66, .9) 0%, rgba(10, 35, 66, .72) 55%, rgba(10, 35, 66, .45) 100%), url('/img/huanuco-paisaje.svg') center / cover no-repeat, #0A2342;
+}
+.portada-int > * { min-width: 0; }
+.portada-int { display: grid; grid-template-columns: minmax(0, 1fr) 420px; gap: 48px; align-items: center; padding-top: 52px; padding-bottom: 56px; }
+.chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 999px; background: rgba(255, 255, 255, .14); border: 1px solid rgba(255, 255, 255, .25); font-size: 13px; font-weight: 700; }
+h1 { color: #fff; font-size: clamp(32px, 4.4vw, 50px); margin: 18px 0 16px; }
+.lead { font-size: 18px; color: #E3EAF5; max-width: 600px; }
+.buscador { margin-top: 26px; max-width: 620px; }
+.buscador label { display: block; font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+.caja-busqueda { display: flex; align-items: center; gap: 10px; background: #fff; border-radius: 14px; padding: 6px 6px 6px 16px; color: #6B7280; box-shadow: 0 10px 30px rgba(0, 0, 0, .25); }
+.caja-busqueda input { flex: 1; min-width: 0; border: 0; outline: none; font-size: 16px; min-height: 44px; color: var(--texto); background: none; }
+.mas-buscados { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 16px; font-size: 14px; color: #DCE6F5; }
+.mas-buscados button { border: 1px solid rgba(255, 255, 255, .45); background: rgba(255, 255, 255, .08); color: #fff; border-radius: 999px; padding: 6px 14px; font-size: 13px; font-weight: 700; cursor: pointer; }
+.mas-buscados button:hover { background: rgba(255, 255, 255, .2); }
+.ventajas { list-style: none; padding: 0; margin: 20px 0 0; display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 14px; font-weight: 600; }
+.ventajas li { display: flex; align-items: center; gap: 8px; }
+.ventajas app-icono { color: #7BE0A6; }
+.portada-tarjeta { background: #fff; color: var(--texto); border-radius: 18px; padding: 28px; box-shadow: 0 24px 60px rgba(0, 0, 0, .3); }
+
+.seccion { padding: 64px 0; background: var(--fondo); }
+.seccion.blanca { background: #fff; }
+.seccion h2 { margin: 6px 0 6px; }
+.cabeza { margin-bottom: 24px; align-items: flex-end; }
+.enlace-flecha { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; text-decoration: none; }
+.tramite { display: flex; align-items: flex-start; gap: 16px; text-align: left; padding: 22px; border-radius: 16px; background: #fff; border: 1px solid var(--borde); box-shadow: var(--sombra); cursor: pointer; transition: transform .15s, box-shadow .15s; }
+.tramite:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(16, 24, 40, .1); border-color: #C9D6E8; }
+.tramite-texto { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.tramite-texto b { color: var(--titulo); font-size: 17px; }
+.datos { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; font-weight: 700; color: var(--texto-3); margin-top: 8px; }
+.datos span { display: inline-flex; align-items: center; gap: 6px; }
+.flecha { color: #9CA3AF; align-self: center; }
+.nota-tasas { margin-top: 18px; }
+
+.centrado { text-align: center; margin-bottom: 28px; }
+.paso { background: var(--fondo); border-radius: 16px; padding: 22px; }
+.icono-azul { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 12px; background: var(--primario); color: #fff; }
+.numero { font-family: var(--fuente-titulo); font-weight: 900; font-size: 34px; color: #C7D6EC; }
+.paso h3 { margin: 16px 0 8px; }
+.paso p { color: var(--texto-3); font-size: 15px; }
+
+.consultas { background: var(--primario); padding: 60px 0; color: #fff; }
+.consultas h2 { color: #fff; }
+.consultas .sub { color: #DCE6F5; margin: 6px 0 24px; }
+.consulta { background: #fff; color: var(--texto); border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 18px; box-shadow: 0 16px 40px rgba(0, 0, 0, .18); }
+.en-linea { display: flex; gap: 8px; }
+.en-linea .entrada { flex: 1; min-width: 0; }
+.mayus { text-transform: uppercase; }
+.mayus::placeholder { text-transform: none; }
+
+.sede { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; margin-top: 22px; }
+.sede-datos { display: flex; flex-direction: column; gap: 18px; }
+.dato { display: flex; gap: 12px; align-items: flex-start; }
+.dato > app-icono { color: var(--primario); margin-top: 2px; }
+.dato b { display: block; color: var(--titulo); }
+.horario { display: flex; justify-content: space-between; gap: 12px; padding: 10px 14px; background: var(--fondo); border-radius: 8px; margin-top: 8px; font-size: 15px; }
+.mapa { position: relative; border-radius: 16px; overflow: hidden; border: 1px solid var(--borde); min-height: 300px; background: #EEF2F7; }
+.mapa img { width: 100%; height: 100%; object-fit: cover; }
+.mapa-nota { position: absolute; left: 12px; top: 12px; background: #fff; border-radius: 999px; padding: 4px 12px; font-size: 12px; font-weight: 700; color: var(--texto-3); box-shadow: var(--sombra); }
+.titulo-canales { margin: 36px 0 16px; }
+.canal { display: flex; gap: 12px; align-items: flex-start; padding: 18px; border-radius: 14px; background: var(--fondo); }
+.canal > app-icono { color: var(--primario); }
+.canal b { display: block; color: var(--titulo); }
+.canal span { font-size: 14px; color: var(--texto-3); }
+.requisitos { list-style: none; padding: 0; margin: 10px 0 0; display: flex; flex-direction: column; gap: 10px; }
+.requisitos li { display: flex; gap: 10px; align-items: flex-start; font-size: 15px; }
+.requisitos app-icono { color: var(--exito); margin-top: 3px; }
+
+@media (max-width: 1000px) {
+  .portada-int { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .portada-tarjeta { max-width: 520px; }
+}
+@media (max-width: 760px) {
+  .sede { grid-template-columns: 1fr; }
+  .seccion { padding: 44px 0; }
+  .en-linea { flex-direction: column; }
+  .caja-busqueda .btn { padding: 0 14px; }
+}
