@@ -1,0 +1,121 @@
+<div class="encabezado-pagina">
+  <div><h1>Panel de turnos</h1><p>{{ fechaHoy() }}</p></div>
+  @if (ventanilla()) {
+    <div class="ventanilla-chip">
+      <span class="num">{{ ventanilla() }}</span>
+      <span><small>Ventanilla asignada</small><b>Ventanilla {{ ventanilla() }}</b></span>
+      <span class="insignia" [class]="actual() ? 'insignia insignia-naranja' : 'insignia insignia-verde'"><i class="punto"></i>{{ actual() ? 'Atendiendo' : 'Disponible' }}</span>
+    </div>
+  }
+</div>
+
+@if (!ventanilla()) {
+  <section class="tarjeta sin-ventanilla">
+    <span class="icono-caja naranja" style="width:64px;height:64px"><app-icono nombre="monitor" [tam]="30" /></span>
+    <b>Aún no tienes una ventanilla asignada</b>
+    <p class="texto-3">Pide al administrador de la sede que te asigne la ventanilla 1, 2 o 3 desde «Usuarios». Cuando lo haga, tu cola de turnos aparecerá aquí.</p>
+  </section>
+} @else {
+
+@if (!enLinea() || modoLocal()) {
+  <div class="aviso aviso-advertencia" role="status" style="margin-bottom:16px">
+    <app-icono nombre="wifi-off" />
+    <div><strong>{{ modoLocal() ? 'Sin internet · trabajando en modo local' : 'Sin conexión' }}</strong>
+      {{ modoLocal() ? 'Los turnos se siguen emitiendo y atendiendo con el servidor de la sede. Se sincronizarán al volver la red.' : 'Mostramos el último estado guardado. Se actualizará solo al volver la red.' }}</div>
+  </div>
+}
+
+<div class="rejilla-4 kpis">
+  <div class="kpi"><app-icono nombre="users" /><span><small>En cola</small><b>{{ resumen().enCola }}</b></span></div>
+  <div class="kpi"><app-icono nombre="user-check" /><span><small>Atendidos hoy</small><b>{{ resumen().atendidos }}</b></span></div>
+  <div class="kpi"><app-icono nombre="user-x" /><span><small>Ausentes hoy</small><b>{{ resumen().ausentes }}</b></span></div>
+  <div class="kpi"><app-icono nombre="hourglass" /><span><small>Espera promedio</small><b>{{ resumen().esperaPromedio }} min</b></span></div>
+</div>
+
+<section class="tarjeta actual">
+  <div class="izq">
+    <span class="et">Turno actual</span>
+    @if (actual(); as a) {
+      <b class="numero">{{ a.numero }}</b>
+      <h3>{{ a.nombre }}</h3>
+      <p class="texto-3">{{ tramite(a.tramiteId) }}@if (a.horaCita) { · cita {{ a.horaCita }} }</p>
+      <p class="texto-xs texto-2">DNI {{ enmascararDni(a.dni) }} · atendiendo hace {{ atendiendoHace(a) }}
+        @if (a.prioridad) { · <span class="insignia insignia-guinda">{{ etiqueta[a.prioridad] }}</span> }</p>
+    } @else {
+      <b class="numero vacio">—</b>
+      <p class="texto-3">No hay un turno en atención. Pulsa «Llamar siguiente».</p>
+    }
+  </div>
+  <div class="der">
+    <button type="button" class="btn btn-primario btn-grande btn-bloque" [disabled]="ocupado() || (!cola().length && !actual())" (click)="llamar()"><app-icono nombre="megaphone" />Llamar siguiente</button>
+    <div class="rejilla-2" style="gap:10px">
+      <button type="button" class="btn btn-exito" [disabled]="!actual() || ocupado()" (click)="atendido()"><app-icono nombre="check" />Atendido</button>
+      <button type="button" class="btn btn-peligro" [disabled]="!actual() || ocupado()" (click)="confirmarAusente.set(true)"><app-icono nombre="user-x" />Ausente</button>
+    </div>
+    <button type="button" class="btn btn-fantasma btn-bloque" [disabled]="!actual() || ocupado()" (click)="volverALlamar()"><app-icono nombre="volume" />Rellamar en la pantalla de sala</button>
+  </div>
+</section>
+
+<section class="tarjeta cola">
+  <div class="fila-entre cabeza">
+    <h3>Cola de espera ({{ cola().length }})</h3>
+    <span class="texto-sm prioridad-ley"><app-icono nombre="accessibility" [tam]="16" />Atención preferente primero (Ley N.º 28683)</span>
+  </div>
+  <div class="tabla-envoltura">
+    <table class="tabla">
+      <thead><tr><th>Turno</th><th>Ciudadano</th><th>Trámite</th><th>Cita</th><th>Prioridad</th><th>Espera</th><th>Acción</th></tr></thead>
+      <tbody>
+        @for (t of cola(); track t.id; let i = $index) {
+          <tr [class.preferente]="t.prioridad">
+            <td><b class="turno">{{ t.numero }}</b>@if (i === 0) { <small class="siguiente">Siguiente</small> }</td>
+            <td>{{ t.nombre }}</td>
+            <td>{{ tramite(t.tramiteId) }}</td>
+            <td>{{ t.horaCita ?? 'Sin cita' }}@if (t.tarde) { <small class="tarde">Llegó tarde · por orden de llegada</small> }</td>
+            <td>@if (t.prioridad) { <span class="insignia insignia-guinda"><app-icono [nombre]="t.prioridad === 'gestante' ? 'heart' : t.prioridad === 'adulto-mayor' ? 'cane' : 'accessibility'" [tam]="14" />{{ etiqueta[t.prioridad] }}</span> } @else { <span class="texto-2">General</span> }</td>
+            <td [class.larga]="espera(t) >= 12">{{ espera(t) }} min</td>
+            <td><button type="button" class="btn btn-fantasma btn-chico" (click)="abrirRepriorizar(t)"><app-icono nombre="arrow-up-down" [tam]="16" />Repriorizar</button></td>
+          </tr>
+        } @empty {
+          <tr><td colspan="7" class="texto-2" style="text-align:center;padding:28px">No hay turnos en espera. Los nuevos aparecen al hacer <a routerLink="/operador/check-in">check-in</a>.</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  <p class="actualizado texto-xs texto-2"><app-icono nombre="refresh" [tam]="14" />Se actualiza cada 30 segundos · última actualización hace {{ haceSeg() }} s</p>
+</section>
+}
+
+@if (porRepriorizar(); as t) {
+  <app-modal [titulo]="'Repriorizar turno ' + t.numero" [subtitulo]="t.nombre + ' · ' + tramite(t.tramiteId)" icono="arrow-up-down" tono="guinda" [ancho]="520" (cerrar)="porRepriorizar.set(null)">
+    <span class="etiqueta">Tipo de atención</span>
+    <div class="rejilla-2 opciones">
+      @for (p of [{ v: 'gestante', i: 'heart' }, { v: 'adulto-mayor', i: 'cane' }, { v: 'discapacidad', i: 'accessibility' }, { v: null, i: 'user' }]; track p.v) {
+        <button type="button" class="opcion" [class.activa]="nuevaPrioridad() === p.v" (click)="nuevaPrioridad.set($any(p.v))">
+          <app-icono [nombre]="p.i" [tam]="18" />{{ p.v ? etiqueta[p.v] : 'Sin prioridad' }}</button>
+      }
+    </div>
+    <div class="campo" [class.con-error]="errorMotivo()" style="margin-top:14px">
+      <label for="rp-mot">Motivo <span style="color:var(--error)">(obligatorio)</span></label>
+      <textarea id="rp-mot" class="entrada" rows="3" placeholder="Ej.: la persona presenta carné del CONADIS en ventanilla." [value]="motivo()" (input)="motivo.set($any($event.target).value); errorMotivo.set('')"></textarea>
+      <span class="error" [style.visibility]="errorMotivo() || !motivo().trim() ? 'visible' : 'hidden'"><app-icono nombre="alert-circle" [tam]="14" /> {{ errorMotivo() || 'Escribe el motivo para continuar. Quedará registrado en la bitácora.' }}</span>
+    </div>
+    <div pie>
+      <button type="button" class="btn btn-fantasma" (click)="porRepriorizar.set(null)">Cancelar</button>
+      <button type="button" class="btn btn-primario" [disabled]="ocupado()" (click)="guardarRepriorizar()">Guardar y reordenar cola</button>
+    </div>
+  </app-modal>
+}
+
+@if (confirmarAusente() && actual(); as a) {
+  <app-modal [titulo]="'Marcar ausente ' + a.numero" [subtitulo]="a.nombre" icono="user-x" tono="roja" [ancho]="460" (cerrar)="confirmarAusente.set(false)">
+    <div class="campo"><label for="au-mot">Motivo</label>
+      <select id="au-mot" class="entrada" (change)="motivoAusente.set($any($event.target).value)">
+        @for (m of motivos; track m) { <option [value]="m" [selected]="motivoAusente() === m">{{ m }}</option> }
+      </select></div>
+    <p class="texto-sm texto-2" style="margin-top:10px">La cita queda como «No asistió» y el cambio se registra en la bitácora (HU-06).</p>
+    <div pie>
+      <button type="button" class="btn btn-fantasma" (click)="confirmarAusente.set(false)">Cancelar</button>
+      <button type="button" class="btn btn-peligro-lleno" [disabled]="ocupado()" (click)="ausente()">Marcar ausente</button>
+    </div>
+  </app-modal>
+}

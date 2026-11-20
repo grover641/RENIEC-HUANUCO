@@ -1,0 +1,26 @@
+.turno { display: grid; grid-template-columns: minmax(240px, 360px) minmax(0, 1fr); gap: 20px; }
+.grande { background: var(--primario); color: #fff; border-radius: 18px; padding: 26px; display: flex; flex-direction: column; gap: 8px; }
+.llamado .grande { background: var(--exito); }
+.et { font-size: 14px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: #DCE6F5; }
+.numero { font-family: var(--fuente-titulo); font-weight: 900; font-size: clamp(60px, 9vw, 92px); line-height: 1; white-space: nowrap; }
+.pill { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; background: #fff; color: var(--titulo); border-radius: 999px; padding: 6px 14px; font-size: 14px; font-weight: 700; }
+.pill i { width: 9px; height: 9px; border-radius: 50%; background: var(--advertencia); }
+.llamado-pill { color: var(--exito); }
+.tramite { margin-top: auto; font-weight: 700; padding-top: 12px; }
+.tramite small { display: block; font-weight: 400; color: #DCE6F5; }
+.lado { display: flex; flex-direction: column; gap: 14px; }
+.datos { gap: 10px; }
+.dato { background: var(--fondo); border-radius: 14px; padding: 14px 16px; }
+.dato span { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--texto-2); }
+.dato b { display: block; font-family: var(--fuente-titulo); font-weight: 900; font-size: 34px; color: var(--titulo); white-space: nowrap; }
+.dato small { font-size: 16px; }
+.delante { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 14px; color: var(--texto-3); }
+.chip { background: var(--fondo); border-radius: 999px; padding: 2px 10px; font-weight: 700; font-size: 13px; color: var(--titulo); }
+.chip.yo { background: var(--primario); color: #fff; }
+.refresco { border: 1px solid var(--borde); border-radius: 12px; padding: 12px 14px; font-size: 14px; font-weight: 600; }
+.refresco span { display: inline-flex; align-items: center; gap: 6px; }
+.barra { height: 5px; background: var(--borde); border-radius: 3px; margin-top: 8px; overflow: hidden; }
+.barra i { display: block; height: 100%; background: var(--primario); transition: width 1s linear; }
+.nota { display: flex; gap: 8px; font-size: 14px; color: var(--texto-3); }
+.nota app-icono { margin-top: 2px; flex-shrink: 0; }
+@media (max-width: 860px) { .turno { grid-template-columns: 1fr; } }
