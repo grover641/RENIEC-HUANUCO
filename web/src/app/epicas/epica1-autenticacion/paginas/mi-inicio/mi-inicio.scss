@@ -1,0 +1,23 @@
+.superior { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 20px; }
+.cita { display: flex; gap: 22px; align-items: center; margin: 20px 0; }
+.calendario { flex-shrink: 0; width: 96px; height: 104px; border-radius: 14px; background: var(--primario); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; letter-spacing: .06em; }
+.calendario b { font-family: var(--fuente-titulo); font-size: 42px; font-weight: 900; line-height: 1; margin: 2px 0; }
+.cita-datos { flex: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px 20px; }
+.et { display: block; font-size: 13px; color: var(--texto-2); }
+.cita-datos b { color: var(--titulo); }
+.codigo { font-family: var(--fuente-titulo); font-size: 22px; letter-spacing: .08em; }
+.nota { display: flex; gap: 8px; align-items: center; font-size: 14px; color: var(--texto-3); margin-top: 16px; }
+.vence { font-family: var(--fuente-titulo); font-weight: 900; font-size: 24px; color: var(--titulo); }
+.enlace-flecha { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; text-decoration: none; margin-top: 22px; }
+.titulo { margin: 28px 0 14px; }
+.atajo { display: flex; align-items: center; gap: 14px; padding: 18px; border-radius: 14px; background: #fff; border: 1px solid var(--borde); text-decoration: none; color: var(--texto-2); }
+.atajo:hover { border-color: #C9D6E8; box-shadow: var(--sombra); }
+.atajo > span:nth-child(2) { flex: 1; display: flex; flex-direction: column; }
+.atajo b { color: var(--titulo); }
+.atajo small { font-size: 13px; }
+.avisos { margin-top: 20px; }
+.aviso-item { display: flex; gap: 12px; padding: 16px 0; border-bottom: 1px solid var(--borde); }
+.aviso-item:last-child { border-bottom: 0; padding-bottom: 0; }
+.vacio { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; padding: 26px 0 8px; }
+@media (max-width: 1080px) { .superior { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .cita { flex-direction: column; align-items: flex-start; } }

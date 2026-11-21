@@ -17,3 +17,12 @@ api/.phpunit.result.cache
 web/node_modules/
 web/dist/
 web/.angular/
+
+# Pruebas automáticas: capturas y Playwright (se instala solo en docs/pruebas)
+docs/pruebas/capturas/
+docs/pruebas/node_modules/
+docs/pruebas/package-lock.json
+# Por si alguien instala algo en la raíz por error
+/node_modules/
+/package.json
+/package-lock.json

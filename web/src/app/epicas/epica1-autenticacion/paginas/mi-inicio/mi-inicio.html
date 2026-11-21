@@ -1,0 +1,80 @@
+<div class="encabezado-pagina">
+  <div><h1>Hola, {{ usuario()?.nombres?.split(' ')?.[0] }}</h1><p>{{ hoy }} · Sede Huánuco</p></div>
+</div>
+
+<div class="superior">
+  <section class="tarjeta">
+    <div class="fila-entre"><h3>Tu próxima cita</h3>
+      @if (cita()) { <span class="insignia insignia-azul"><app-icono nombre="check" [tam]="14" />Confirmada</span> }</div>
+    @if (cita(); as c) {
+      <div class="cita">
+        <div class="calendario"><span>{{ c.dia }}</span><b>{{ c.num }}</b><span>{{ c.mes }}</span></div>
+        <div class="cita-datos">
+          <div><span class="et">Trámite</span><b>{{ c.tramite }}</b></div>
+          <div><span class="et">Hora</span><b>{{ c.hora }} · llega 10 min antes</b></div>
+          <div><span class="et">Sede</span><b>{{ sede.nombre }}, Jr. General Prado</b></div>
+          <div><span class="et">Código de cita</span><b class="codigo">{{ c.codigo }}</b></div>
+        </div>
+      </div>
+      <div class="fila">
+        <a class="btn btn-primario" routerLink="/ciudadano/citas"><app-icono nombre="eye" [tam]="18" />Ver cita</a>
+        <a class="btn btn-secundario" routerLink="/ciudadano/citas" [attr.aria-disabled]="!c.puedeCambiar"><app-icono nombre="calendar-clock" [tam]="18" />Reprogramar</a>
+        <a class="btn btn-peligro" routerLink="/ciudadano/citas" [attr.aria-disabled]="!c.puedeCambiar"><app-icono nombre="calendar-x" [tam]="18" />Cancelar</a>
+      </div>
+      <p class="nota"><app-icono nombre="info" [tam]="16" />
+        @if (c.puedeCambiar) { Puedes reprogramar o cancelar hasta el {{ c.limiteTexto }} (24 horas antes). }
+        @else { Faltan menos de 24 horas: ya no puedes reprogramar ni cancelar en línea. }
+      </p>
+    } @else {
+      <div class="vacio">
+        <span class="icono-caja" style="width:64px;height:64px"><app-icono nombre="calendar-plus" [tam]="30" /></span>
+        <b>Aún no tienes citas</b>
+        <p class="texto-2">Reserva tu primera cita en pocos pasos.</p>
+        <a class="btn btn-primario" routerLink="/ciudadano/reservar">Reservar cita</a>
+      </div>
+    }
+  </section>
+
+  <section class="tarjeta">
+    <h3>Estado de tu DNI</h3>
+    @switch (estadoDni()?.tipo) {
+      @case ('tramite') {
+        <span class="insignia" [class]="estadoDni()!.listo ? 'insignia insignia-verde' : 'insignia insignia-azul'" style="margin-top:12px">
+          <app-icono [nombre]="estadoDni()!.listo ? 'check-circle' : 'hourglass'" [tam]="14" />{{ $any(estadoDni()).estado }}</span>
+        <p class="texto-3" style="margin-top:14px">{{ $any(estadoDni()).nombre }}. {{ estadoDni()!.listo ? 'Ya puedes reservar tu cita de recojo.' : 'Te avisaremos cuando esté listo para recoger.' }}</p>
+      }
+      @case ('por-vencer') {
+        <span class="insignia insignia-naranja" style="margin-top:12px"><app-icono nombre="alert-triangle" [tam]="14" />Por vencer</span>
+        <p class="texto-2 texto-sm" style="margin-top:14px">Tu DNI actual vence el</p>
+        <p class="vence">{{ $any(estadoDni()).vence }}</p>
+        <p class="texto-3" style="margin-top:12px">Tu cita es para renovarlo. Después podrás seguir el avance en «Mi trámite».</p>
+      }
+      @default {
+        <span class="insignia insignia-gris" style="margin-top:12px"><app-icono nombre="id-card" [tam]="14" />Sin trámites en curso</span>
+        <p class="texto-3" style="margin-top:14px">Cuando hagas un trámite de DNI en la sede, aquí verás si ya está listo para recoger.</p>
+      }
+    }
+    <a class="enlace-flecha" routerLink="/ciudadano/tramite">Ver Mi trámite<app-icono nombre="arrow-right" [tam]="18" /></a>
+  </section>
+</div>
+
+<h3 class="titulo">Accesos rápidos</h3>
+<div class="rejilla-4">
+  <a class="atajo" routerLink="/ciudadano/reservar"><span class="icono-caja"><app-icono nombre="calendar-plus" /></span><span><b>Reservar cita</b><small>Elige trámite, día y hora</small></span><app-icono nombre="chevron-right" [tam]="18" /></a>
+  <a class="atajo" routerLink="/ciudadano/turno"><span class="icono-caja guinda"><app-icono nombre="ticket" /></span><span><b>Mi turno</b><small>Disponible el día de tu cita</small></span><app-icono nombre="chevron-right" [tam]="18" /></a>
+  <a class="atajo" routerLink="/ciudadano/tramite"><span class="icono-caja verde"><app-icono nombre="id-card" /></span><span><b>Mi trámite</b><small>¿Mi DNI está listo?</small></span><app-icono nombre="chevron-right" [tam]="18" /></a>
+  <a class="atajo" routerLink="/ciudadano/avisos"><span class="icono-caja naranja"><app-icono nombre="bell" /></span><span><b>Mis avisos</b><small>{{ sinLeer() }} {{ sinLeer() === 1 ? 'aviso nuevo' : 'avisos nuevos' }}</small></span><app-icono nombre="chevron-right" [tam]="18" /></a>
+</div>
+
+<section class="tarjeta avisos">
+  <div class="fila-entre"><h3>Últimos avisos</h3><a routerLink="/ciudadano/avisos" class="fuerte">Ver todos</a></div>
+  @for (a of avisos(); track a.id) {
+    <div class="aviso-item">
+      <app-icono [nombre]="a.tipo === 'recordatorio' ? 'bell' : a.tipo === 'dni-listo' ? 'package' : 'message'" [style.color]="a.estado === 'fallo' ? '#C62828' : a.tipo === 'recordatorio' ? '#0B4F9C' : '#2E7D47'" />
+      <div><p><b>{{ a.titulo }}</b> · {{ a.detalle }}</p>
+        <small class="texto-2">{{ a.canal }} · {{ estadoTexto(a.estado) }}</small></div>
+    </div>
+  } @empty {
+    <p class="texto-2">No tienes avisos todavía.</p>
+  }
+</section>
