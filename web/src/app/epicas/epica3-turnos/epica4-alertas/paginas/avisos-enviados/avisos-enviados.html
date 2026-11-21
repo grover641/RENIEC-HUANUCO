@@ -1,0 +1,34 @@
+<div class="encabezado-pagina"><div><h1>Avisos enviados</h1><p>Bitácora de WhatsApp y SMS · hoy, {{ hoyTexto }}</p></div></div>
+
+<div class="rejilla-4">
+  <div class="kpi"><small>Enviados el día</small><b>{{ kpis().enviados }}</b></div>
+  <div class="kpi"><small>Entregados</small><b>{{ kpis().entregados }} %</b></div>
+  <div class="kpi"><small>Fallaron</small><b>{{ kpis().fallaron }}</b></div>
+  <div class="kpi"><small>Reenviados por SMS</small><b>{{ kpis().reenviados }}</b></div>
+</div>
+
+<section class="tarjeta tabla-tarjeta">
+  <div class="filtros">
+    <label class="fila" style="gap:8px"><span class="texto-sm texto-3">Fecha</span><input class="entrada" type="date" [value]="fecha()" (change)="fecha.set($any($event.target).value)" /></label>
+    <div class="pastillas">@for (e of estados; track e.v) { <button type="button" class="pastilla" [attr.aria-pressed]="fEstado() === e.v" (click)="fEstado.set(e.v)">{{ e.t }}</button> }</div>
+    <div class="pastillas">@for (c of canales; track c.v) { <button type="button" class="pastilla" [attr.aria-pressed]="fCanal() === c.v" (click)="fCanal.set(c.v)">{{ c.t }}</button> }</div>
+  </div>
+  <div class="tabla-envoltura">
+    <table class="tabla">
+      <thead><tr><th>Hora</th><th>Ciudadano</th><th>Tipo de aviso</th><th>Canal</th><th>Estado</th><th>Detalle</th></tr></thead>
+      <tbody>
+        @for (a of filas(); track a.id) {
+          <tr>
+            <td class="mono">{{ hora(a) }}</td>
+            <td class="ciudadano"><b>{{ corto(a.nombre) }}</b><small>DNI {{ enmascararDni(a.dni) }}</small></td>
+            <td>{{ tipo(a) }}</td>
+            <td><span class="canal"><app-icono [nombre]="a.canal === 'SMS' ? 'sms' : 'message'" [tam]="16" />{{ a.canal }}</span></td>
+            <td><span class="insignia" [class]="'insignia ' + est(a).c"><app-icono [nombre]="est(a).i" [tam]="14" />{{ est(a).t }}</span></td>
+            <td class="texto-sm texto-3">{{ a.nota || a.detalle }}</td>
+          </tr>
+        } @empty { <tr><td colspan="6" class="texto-2" style="text-align:center;padding:28px">No hay avisos con esos filtros.</td></tr> }
+      </tbody>
+    </table>
+  </div>
+  <div class="pie-tabla"><span>Mostrando {{ filas().length }} de {{ delDia().length }} avisos del día</span><span>Si WhatsApp falla, el sistema reenvía por SMS en menos de 1 minuto. Sin consentimiento no se envía y queda registrado.</span></div>
+</section>
