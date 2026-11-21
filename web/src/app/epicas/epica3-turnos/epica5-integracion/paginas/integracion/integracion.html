@@ -1,0 +1,70 @@
+<div class="encabezado-pagina">
+  <div><h1>Integración y respaldo</h1><p>Conexión con el sistema central, internet de la sede y modo local · actualizado {{ ultima() }}</p></div>
+  <button type="button" class="btn btn-secundario" [disabled]="ocupado()" (click)="probar()"><app-icono nombre="refresh" [tam]="18" />Probar conexión</button>
+</div>
+
+<div class="rejilla-3">
+  <section class="tarjeta servicio">
+    <div class="fila-entre"><span class="icono-caja verde"><app-icono nombre="server" /></span>
+      <span class="insignia" [class]="i().central === 'conectado' ? 'insignia insignia-verde' : 'insignia insignia-roja'"><app-icono [nombre]="i().central === 'conectado' ? 'check' : 'x'" [tam]="13" />{{ i().central === 'conectado' ? 'Conectado' : 'Sin respuesta' }}</span></div>
+    <h3>Sistema central</h3><p>Consulta de DNI y estados. Última respuesta: {{ i().respuestaMs }} ms.</p>
+  </section>
+  <section class="tarjeta servicio">
+    <div class="fila-entre"><span class="icono-caja"><app-icono [nombre]="i().internet === 'estable' ? 'wifi' : 'wifi-off'" /></span>
+      <span class="insignia" [class]="i().internet === 'estable' ? 'insignia insignia-verde' : 'insignia insignia-roja'">{{ i().internet === 'estable' ? 'Estable' : 'Caído' }}</span></div>
+    <h3>Internet de la sede</h3><p>{{ i().internet === 'estable' ? 'Enlace principal activo.' : 'Sin conexión desde las ' + caidaDesde() + '.' }}</p>
+  </section>
+  <section class="tarjeta servicio" [class.alerta]="i().modoLocal">
+    <div class="fila-entre"><span class="icono-caja naranja"><app-icono nombre="database" /></span>
+      <span class="insignia" [class]="i().modoLocal ? 'insignia insignia-naranja' : 'insignia insignia-gris'">{{ i().modoLocal ? 'Activo' : 'En espera' }}</span></div>
+    <h3>Modo local</h3><p>{{ i().modoLocal ? 'Las ventanillas atienden con el servidor de la sede (turnos HCO-0xx).' : 'Se activa solo si se cae el internet.' }}</p>
+  </section>
+</div>
+
+<div class="demo tarjeta-plana no-imprimir">
+  <b><app-icono nombre="sliders" [tam]="18" />Demostración</b>
+  <span class="texto-sm texto-3">Prueba el respaldo local (HU-04A) y la sincronización sin duplicados (HU-04B), y la consulta al sistema central (HU-14).</span>
+  <div class="fila">
+    @if (!i().modoLocal) { <button type="button" class="btn btn-peligro" [disabled]="ocupado()" (click)="caida()"><app-icono nombre="wifi-off" [tam]="18" />Simular caída de internet</button> }
+    @else { <button type="button" class="btn btn-exito" [disabled]="ocupado()" (click)="volver()"><app-icono nombre="wifi" [tam]="18" />Restablecer conexión y sincronizar</button> }
+    <button type="button" class="btn btn-secundario" [disabled]="ocupado() || i().modoLocal" (click)="consultarDni()"><app-icono nombre="database" [tam]="18" />Consultar estados de DNI ({{ dniPendientes() }} {{ dniPendientes() === 1 ? 'pendiente' : 'pendientes' }})</button>
+  </div>
+</div>
+
+<div class="dos">
+  <section class="tarjeta">
+    <h3>Cola de sincronización</h3>
+    <div class="progreso"><div class="fila-entre texto-sm"><span>Registros del modo local enviados al central</span><b>{{ enviados() }} de {{ total() }}</b></div>
+      <div class="barra"><i [style.width.%]="total() ? (enviados() / total()) * 100 : 100"></i></div></div>
+    <ul class="lista">
+      <li><span>Check-in y turnos emitidos</span><b class="ok">{{ checkins() }} enviados</b></li>
+      <li><span>Atenciones cerradas y cambios</span><b class="ok">{{ cerradas() }} enviados</b></li>
+      <li class="naranja"><span>{{ i().conflictos.length ? 'Con conflicto, esperan revisión' : 'Pendientes de envío' }}</span><b>{{ pendientes() }} pendientes</b></li>
+    </ul>
+    <p class="texto-xs texto-2"><app-icono nombre="info" [tam]="14" /> Cada registro local lleva un identificador único (UUID): si llega dos veces, el segundo se omite.</p>
+  </section>
+
+  <section class="tarjeta">
+    <h3>Conflictos para resolver ({{ i().conflictos.length }})</h3>
+    @for (c of i().conflictos; track c.id) {
+      <div class="conflicto">
+        <div class="fila-entre"><b>{{ c.titulo }}</b><span class="insignia insignia-naranja">Pendiente</span></div>
+        <div class="rejilla-2" style="gap:8px;margin:10px 0">
+          <div class="caja-gris"><small>Dato local (sede)</small>{{ c.local }}</div>
+          <div class="caja-gris"><small>Dato del sistema central</small>{{ c.central }}</div>
+        </div>
+        <div class="fila"><button type="button" class="btn btn-primario btn-chico" [disabled]="ocupado()" (click)="resolver(c.id, 'local')">Usar dato local</button>
+          <button type="button" class="btn btn-secundario btn-chico" [disabled]="ocupado()" (click)="resolver(c.id, 'central')">Usar dato central</button></div>
+      </div>
+    } @empty { <div class="caja-gris texto-2"><app-icono nombre="check-circle" [tam]="16" /> No hay conflictos. Los datos están al día.</div> }
+  </section>
+</div>
+
+<section class="tarjeta">
+  <h3>Eventos de hoy</h3>
+  <ul class="eventos">
+    @for (e of i().eventos.slice(0, 8); track $index) {
+      <li><span class="mono">{{ hora(e.fecha) }}</span><app-icono [nombre]="e.icono" [tam]="16" /><span>{{ e.texto }}</span></li>
+    }
+  </ul>
+</section>

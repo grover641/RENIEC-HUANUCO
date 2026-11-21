@@ -1,0 +1,66 @@
+<div class="encabezado-pagina">
+  <div><h1>Dashboard</h1><p>{{ cabecera }}</p></div>
+  <a class="btn btn-secundario" routerLink="/admin/reportes"><app-icono nombre="eye" [tam]="18" />Ver reportes</a>
+</div>
+
+<div class="fila barra-filtros">
+  <div class="pastillas">
+    <button type="button" class="pastilla" [attr.aria-pressed]="rango() === 'hoy'" (click)="rango.set('hoy')">Hoy</button>
+    <button type="button" class="pastilla" [attr.aria-pressed]="rango() === '7'" (click)="rango.set('7')">Últimos 7 días</button>
+    <button type="button" class="pastilla" [attr.aria-pressed]="rango() === '30'" (click)="rango.set('30')">Últimos 30 días</button>
+  </div>
+  <button type="button" class="btn btn-fantasma btn-chico" (click)="enTabla.set(!enTabla())"><app-icono [nombre]="enTabla() ? 'bar-chart' : 'list'" [tam]="16" />{{ enTabla() ? 'Ver gráficos' : 'Ver datos en tabla' }}</button>
+</div>
+@if (rango() !== 'hoy') { <p class="texto-sm texto-2" style="margin:-6px 0 12px">Para rangos de varios días usa <a routerLink="/admin/reportes">Reportes</a> (con exportación a PDF y Excel). Aquí se muestran los indicadores del día.</p> }
+
+<div class="kpis">
+  <div class="kpi"><small><app-icono nombre="hourglass" [tam]="15" />Espera promedio hoy</small><b>{{ e.esperaPromedio }} min</b>
+    <span class="insignia insignia-verde"><app-icono nombre="check" [tam]="13" />Meta: menos de {{ e.metaEspera }} min</span></div>
+  <div class="kpi"><small><app-icono nombre="smartphone" [tam]="15" />Citas digitales</small><b>{{ e.citasDigitalesPct }} %</b>
+    <span class="insignia insignia-verde"><app-icono nombre="check" [tam]="13" />Meta: al menos {{ e.metaDigital }} %</span></div>
+  <div class="kpi"><small><app-icono nombre="calendar" [tam]="15" />Citas de hoy</small><b>{{ e.citasHoy }}</b><span class="texto-xs texto-2">de {{ e.cuposOfertados }} cupos ofertados</span></div>
+  <div class="kpi"><small><app-icono nombre="user-x" [tam]="15" />Inasistencias</small><b>{{ e.inasistencias }}</b><span class="texto-xs texto-2">{{ e.inasistenciasPct }} % de las citas de hoy</span></div>
+  <div class="kpi"><small><app-icono nombre="user-check" [tam]="15" />Turnos atendidos</small><b>{{ atendidos() }}</b><span class="texto-xs texto-2">en 3 ventanillas</span></div>
+</div>
+
+@if (!enTabla()) {
+  <div class="graficos">
+    <section class="tarjeta"><div class="fila-entre"><h3>Espera promedio por hora</h3><span class="texto-xs texto-2">minutos · hoy</span></div>
+      <app-grafico-linea [datos]="esperaHora" [meta]="30" textoMeta="Meta: menos de 30 min" titulo="Espera promedio por hora" /></section>
+    <section class="tarjeta"><div class="fila-entre"><h3>Turnos por ventanilla</h3><span class="texto-xs texto-2">atendidos · hoy</span></div>
+      <app-grafico-barras [datos]="porVentanilla()" [horizontal]="true" titulo="Turnos por ventanilla" /></section>
+  </div>
+  <div class="graficos">
+    <section class="tarjeta"><div class="fila-entre"><h3>Citas por día · últimos 7 días hábiles</h3>
+      <span class="leyenda"><i class="azul"></i>Digitales <i class="guinda"></i>Presenciales</span></div>
+      <app-grafico-barras [datos]="citasDia" titulo="Citas por día" />
+      <p class="texto-xs texto-2">En la semana, el {{ digitalesSemana }} % de las citas fueron digitales (meta: al menos 70 %).</p></section>
+    <ng-container *ngTemplateOutlet="estado" />
+  </div>
+} @else {
+  <div class="graficos">
+    <section class="tarjeta"><h3>Datos del día</h3>
+      <table class="tabla"><thead><tr><th>Hora</th><th>Espera promedio (min)</th></tr></thead>
+        <tbody>@for (p of esperaHora; track p.etiqueta) { <tr><td>{{ p.etiqueta }}</td><td>{{ p.valor }}</td></tr> }</tbody></table>
+      <table class="tabla" style="margin-top:14px"><thead><tr><th>Ventanilla</th><th>Turnos atendidos</th></tr></thead>
+        <tbody>@for (b of porVentanilla(); track b.etiqueta) { <tr><td>{{ b.etiqueta }}</td><td>{{ b.valores[0] }}</td></tr> }</tbody></table></section>
+    <section class="tarjeta"><h3>Citas por día</h3>
+      <table class="tabla"><thead><tr><th>Día</th><th>Digitales</th><th>Presenciales</th></tr></thead>
+        <tbody>@for (d of citasDia; track d.etiqueta) { <tr><td>{{ d.etiqueta }}</td><td>{{ d.valores[0] }}</td><td>{{ d.valores[1] }}</td></tr> }</tbody></table></section>
+  </div>
+}
+
+<ng-template #estado>
+  <section class="tarjeta estado">
+    <h3>Estado del sistema</h3>
+    <div class="servicio"><span class="icono-caja verde chico"><app-icono nombre="server" [tam]="18" /></span><span><b>Sistema central</b><small>Última consulta {{ integ().respuestaMs }} ms</small></span>
+      <span class="insignia" [class]="integ().central === 'conectado' ? 'insignia insignia-verde' : 'insignia insignia-roja'">{{ integ().central === 'conectado' ? 'Conectado' : 'Sin respuesta' }}</span></div>
+    <div class="servicio"><span class="icono-caja chico"><app-icono [nombre]="integ().internet === 'estable' ? 'wifi' : 'wifi-off'" [tam]="18" /></span><span><b>Internet de la sede</b><small>Enlace principal activo</small></span>
+      <span class="insignia" [class]="integ().internet === 'estable' ? 'insignia insignia-verde' : 'insignia insignia-roja'">{{ integ().internet === 'estable' ? 'Estable' : 'Caído' }}</span></div>
+    <div class="servicio"><span class="icono-caja naranja chico"><app-icono nombre="database" [tam]="18" /></span><span><b>Modo local</b><small>Se activa solo si se cae el internet</small></span>
+      <span class="insignia" [class]="integ().modoLocal ? 'insignia insignia-naranja' : 'insignia insignia-gris'">{{ integ().modoLocal ? 'Activo' : 'En espera' }}</span></div>
+    <div class="servicio"><span class="icono-caja turquesa chico"><app-icono nombre="sync" [tam]="18" /></span><span><b>Sincronización</b><small>{{ integ().conflictos.length }} conflicto(s) por revisar</small></span>
+      <span class="insignia insignia-azul">{{ pendientes() }} pendientes</span></div>
+    <a routerLink="/admin/integracion" class="fuerte texto-sm">Ver integración y respaldo →</a>
+  </section>
+</ng-template>

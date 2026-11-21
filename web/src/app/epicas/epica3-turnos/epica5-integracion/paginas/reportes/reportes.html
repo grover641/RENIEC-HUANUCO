@@ -1,0 +1,53 @@
+<div class="solo-imprimir"><app-logo [tam]="40" /><span>Reporte de uso · {{ desde() }} a {{ hasta() }}{{ ventanilla() ? ' · Ventanilla ' + ventanilla() : '' }} · Proyecto académico · no es un sitio oficial de RENIEC</span></div>
+<div class="encabezado-pagina">
+  <div><h1>Reportes</h1><p>Indicadores de la sede para el periodo elegido.</p></div>
+  <div class="fila no-imprimir">
+    <button type="button" class="btn btn-peligro" [disabled]="!reporte()" (click)="pdf()"><app-icono nombre="file-text" [tam]="18" />Exportar PDF</button>
+    <button type="button" class="btn btn-secundario" style="color:#2E7D47;border-color:#2E7D47" [disabled]="!reporte()" (click)="excel()"><app-icono nombre="file-sheet" [tam]="18" />Exportar Excel</button>
+  </div>
+</div>
+
+<form class="tarjeta filtros no-imprimir" (submit)="$event.preventDefault(); aplicar()">
+  <div class="campo"><label for="r-desde">Desde</label><input id="r-desde" class="entrada" type="date" [value]="desde()" (change)="desde.set($any($event.target).value)" /></div>
+  <div class="campo"><label for="r-hasta">Hasta</label><input id="r-hasta" class="entrada" type="date" [value]="hasta()" (change)="hasta.set($any($event.target).value)" /></div>
+  <div class="campo"><label for="r-v">Ventanilla</label>
+    <select id="r-v" class="entrada" (change)="ventanilla.set($any($event.target).value ? +$any($event.target).value : null)">
+      <option value="" [selected]="!ventanilla()">Todas</option>
+      @for (v of ventanillas; track v) { <option [value]="v" [selected]="ventanilla() === v">Ventanilla {{ v }}</option> }
+    </select></div>
+  <button type="submit" class="btn btn-primario" [disabled]="cargando()">@if (cargando()) { <span class="girando"></span> } Aplicar</button>
+</form>
+
+@if (sinDatos()) {
+  <div class="tarjeta" style="text-align:center"><b>Sin datos</b><p class="texto-2">No hay información para ese rango de fechas. Prueba con otro periodo (hay datos del 26 de octubre al 20 de noviembre de 2026).</p></div>
+}
+
+@if (reporte(); as r) {
+  <div class="rejilla-4">
+    <div class="kpi"><small>Espera promedio</small><b>{{ r.espera }} min</b><span class="ok">Meta: menos de 30 min</span></div>
+    <div class="kpi"><small>Citas digitales</small><b>{{ r.digitalesPct }} %</b><span [class.ok]="r.digitalesPct >= 70" [class.texto-2]="r.digitalesPct < 70">Meta: al menos 70 %</span></div>
+    <div class="kpi"><small>Inasistencias</small><b>{{ r.inasistenciaPct }} %</b><span class="texto-2">{{ r.inasistencias }} de {{ r.citas }} citas</span></div>
+    <div class="kpi"><small>Turnos atendidos{{ r.ventanilla ? ' · Ventanilla ' + r.ventanilla : '' }}</small><b>{{ r.atendidos }}</b><span class="texto-2">en {{ r.semanas.length }} semana(s)</span></div>
+  </div>
+  @if (r.ventanilla) {
+    <p class="texto-xs texto-2" style="margin-top:8px">Solo los turnos atendidos se separan por ventanilla. La espera, las citas digitales y las inasistencias son de toda la sede.</p>
+  }
+  <div class="graficos">
+    <section class="tarjeta"><h3>Espera promedio por semana (min)</h3><app-grafico-barras [datos]="espera()" [meta]="30" [etiquetasValor]="true" titulo="Espera promedio por semana" /></section>
+    <section class="tarjeta"><h3>Inasistencias por semana (%)</h3><app-grafico-barras [datos]="inasistencia()" [etiquetasValor]="true" sufijo=" %" titulo="Inasistencias por semana" /></section>
+    <section class="tarjeta"><h3>Turnos por ventanilla</h3><app-grafico-barras [datos]="porVentanilla()" [horizontal]="true" titulo="Turnos por ventanilla" /></section>
+  </div>
+  <section class="tarjeta tabla-tarjeta">
+    <h3>Detalle por semana</h3>
+    <div class="tabla-envoltura"><table class="tabla">
+      <thead><tr><th>Semana</th><th class="n">Citas</th><th class="n">% digitales</th><th class="n">Espera prom.</th><th class="n">Inasistencias</th><th class="n">Atendidos{{ r.ventanilla ? ' V' + r.ventanilla : '' }}</th></tr></thead>
+      <tbody>
+        @for (s of r.semanas; track s.etiqueta) {
+          <tr><td>{{ s.etiqueta }}</td><td class="n">{{ s.citas }}</td><td class="n">{{ s.digitalesPct }} %</td><td class="n">{{ s.espera }} min</td><td class="n">{{ s.inasistenciaPct }} %</td><td class="n">{{ atendidosDe(s, r.ventanilla) }}</td></tr>
+        }
+        <tr><td><b>Total</b></td><td class="n"><b>{{ r.citas }}</b></td><td class="n"><b>{{ r.digitalesPct }} %</b></td><td class="n"><b>{{ r.espera }} min</b></td><td class="n"><b>{{ r.inasistenciaPct }} %</b></td><td class="n"><b>{{ r.atendidos }}</b></td></tr>
+      </tbody>
+    </table></div>
+  </section>
+  <p class="texto-xs texto-2" style="margin-top:10px">Datos de ejemplo de la demostración. En el sistema real los calcula la API de reportes con las citas, turnos y avisos (HU-08).</p>
+}

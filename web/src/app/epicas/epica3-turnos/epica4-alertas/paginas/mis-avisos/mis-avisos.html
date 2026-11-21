@@ -1,0 +1,44 @@
+<div class="encabezado-pagina"><div><h1>Mis avisos</h1><p>Elige cómo quieres que te avisemos. Tú decides y puedes cambiarlo cuando quieras.</p></div></div>
+
+<div class="dos">
+  <section class="tarjeta">
+    <h3>Consentimiento para avisos</h3>
+    <div class="canal">
+      <span class="icono-caja verde"><app-icono nombre="message" /></span>
+      <span class="txt"><b>WhatsApp</b><small>Canal principal · {{ celular() }}</small></span>
+      <label class="interruptor"><input type="checkbox" [checked]="whatsapp()" (change)="cambiar('whatsapp', $any($event.target).checked)" aria-label="Avisos por WhatsApp" /><span></span></label>
+    </div>
+    <div class="canal">
+      <span class="icono-caja"><app-icono nombre="sms" /></span>
+      <span class="txt"><b>SMS</b><small>Respaldo si WhatsApp falla</small></span>
+      <label class="interruptor"><input type="checkbox" [checked]="sms()" (change)="cambiar('sms', $any($event.target).checked)" aria-label="Avisos por SMS" /><span></span></label>
+    </div>
+    <fieldset class="tipos" [disabled]="!whatsapp() && !sms()">
+      <legend>Qué avisos recibir</legend>
+      @for (t of listaTipos; track t.clave) {
+        <label class="casilla"><input type="checkbox" [checked]="tipos()[t.clave]" (change)="cambiarTipo(t.clave, $any($event.target).checked)" /><span>{{ t.texto }}</span></label>
+      }
+    </fieldset>
+    <div class="caja-gris legal">
+      <app-icono nombre="shield-check" [tam]="16" />
+      @if (guardado(); as g) {
+        @if (g.revocado) { <span>Retiraste tu consentimiento el {{ fechaTexto(g.revocado) }}. No te enviaremos avisos (Ley N.º 29733). Tu historial se conserva.</span> }
+        @else { <span>Diste tu consentimiento el {{ fechaTexto(g.fecha) }}. Usamos tu celular <b>{{ celular() }}</b> solo para estos avisos (Ley N.º 29733).</span> }
+      } @else { <span>Aún no diste tu consentimiento. Activa WhatsApp o SMS para recibir avisos.</span> }
+    </div>
+  </section>
+
+  <section class="tarjeta recibidos">
+    <h3>Avisos recibidos</h3>
+    @for (a of avisos(); track a.id) {
+      <div class="aviso-fila">
+        <span class="icono-caja" [class]="'icono-caja ' + icono(a).c"><app-icono [nombre]="icono(a).n" [tam]="20" /></span>
+        <div class="cuerpo">
+          <div class="fila-entre"><b>{{ a.titulo }}</b><small class="texto-2">{{ cuando(a) }}</small></div>
+          <p>{{ a.detalle }}</p>
+          <small class="texto-2">{{ a.canal }} @if (estado(a); as e) { <span class="insignia" [class]="'insignia ' + e.c">{{ e.t }}</span> }</small>
+        </div>
+      </div>
+    } @empty { <p class="texto-2">Todavía no recibiste avisos.</p> }
+  </section>
+</div>
