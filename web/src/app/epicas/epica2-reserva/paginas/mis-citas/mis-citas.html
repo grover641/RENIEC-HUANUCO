@@ -1,0 +1,90 @@
+<div class="encabezado-pagina">
+  <div><h1>Mis citas</h1><p>Reprograma o cancela con más de 24 horas de anticipación.</p></div>
+  <a class="btn btn-primario btn-grande" routerLink="/ciudadano/reservar"><app-icono nombre="calendar-plus" />Nueva cita</a>
+</div>
+
+<div class="pastillas" role="group" aria-label="Filtrar citas" style="margin-bottom:18px">
+  <button type="button" class="pastilla" [attr.aria-pressed]="filtro() === 'todas'" (click)="filtro.set('todas')">Todas</button>
+  <button type="button" class="pastilla" [attr.aria-pressed]="filtro() === 'proximas'" (click)="filtro.set('proximas')">Próximas ({{ proximas().length }})</button>
+  <button type="button" class="pastilla" [attr.aria-pressed]="filtro() === 'pasadas'" (click)="filtro.set('pasadas')">Pasadas ({{ pasadas().length }})</button>
+</div>
+
+@if (filtro() !== 'pasadas') {
+  <h3 class="seccion">Próximas</h3>
+  @for (c of proximas(); track c.id) {
+    <article class="tarjeta cita">
+      <div class="calendario"><span>{{ dia(c) }}</span><b>{{ fecha(c).getDate() }}</b><span>{{ mes(c) }}</span></div>
+      <div class="info">
+        <h4>{{ tramite(c) }} <span class="insignia" [class]="'insignia ' + etiqueta(c.estado).clase">{{ etiqueta(c.estado).texto }}</span></h4>
+        <p>{{ larga(c) }} · {{ c.hora }} · Sede Huánuco · Ventanilla {{ c.ventanilla }}</p>
+        <p>Código <b class="mono">{{ c.codigo }}</b></p>
+        @if (!puedeModificar(c)) {
+          <p class="aviso-24"><app-icono nombre="lock" [tam]="15" />Faltan menos de 24 h: ya no puedes reprogramar ni cancelar en línea. Escríbenos por WhatsApp ({{ sede.whatsapp }}) o acércate a la sede.</p>
+        }
+      </div>
+      <div class="botones">
+        <button type="button" class="btn btn-fantasma" (click)="verCita.set(c)"><app-icono nombre="eye" [tam]="18" />Ver</button>
+        <button type="button" class="btn btn-secundario" [disabled]="!puedeModificar(c)" (click)="abrirReprogramar(c)"><app-icono nombre="calendar-clock" [tam]="18" />Reprogramar</button>
+        <button type="button" class="btn btn-peligro" [disabled]="!puedeModificar(c)" (click)="porCancelar.set(c)"><app-icono nombre="calendar-x" [tam]="18" />Cancelar</button>
+      </div>
+    </article>
+  } @empty {
+    <div class="tarjeta vacio">
+      <span class="icono-caja" style="width:64px;height:64px"><app-icono nombre="calendar-plus" [tam]="30" /></span>
+      <b>Aún no tienes citas próximas</b><p class="texto-2">Reserva tu cita en pocos pasos.</p>
+      <a class="btn btn-primario" routerLink="/ciudadano/reservar">Reservar cita</a>
+    </div>
+  }
+}
+
+@if (filtro() !== 'proximas') {
+  <section class="tarjeta pasadas">
+    <h3>Pasadas</h3>
+    <div class="tabla-envoltura">
+      <table class="tabla">
+        <thead><tr><th>Trámite</th><th>Fecha</th><th>Hora</th><th>Código</th><th>Estado</th></tr></thead>
+        <tbody>
+          @for (c of pasadas(); track c.id) {
+            <tr><td>{{ tramite(c) }}</td><td>{{ fechaCorta(fecha(c)) }}</td><td>{{ c.hora }}</td><td class="mono">{{ c.codigo }}</td>
+              <td><span class="insignia" [class]="'insignia ' + etiqueta(c.estado).clase"><app-icono [nombre]="etiqueta(c.estado).icono" [tam]="14" />{{ etiqueta(c.estado).texto }}</span></td></tr>
+          } @empty { <tr><td colspan="5" class="texto-2">Todavía no tienes citas pasadas.</td></tr> }
+        </tbody>
+      </table>
+    </div>
+  </section>
+}
+
+@if (verCita(); as c) {
+  <app-modal [titulo]="tramite(c)" [subtitulo]="'Código ' + c.codigo" icono="calendar-check" (cerrar)="verCita.set(null)">
+    <div class="rejilla-2" style="margin-bottom:16px">
+      <div class="caja-gris"><span class="texto-xs texto-2">Fecha</span><br /><b>{{ larga(c) }}</b></div>
+      <div class="caja-gris"><span class="texto-xs texto-2">Hora</span><br /><b>{{ c.hora }} · llega 10 min antes</b></div>
+      <div class="caja-gris"><span class="texto-xs texto-2">Sede</span><br /><b>{{ sede.nombre }}</b></div>
+      <div class="caja-gris"><span class="texto-xs texto-2">Ventanilla</span><br /><b>Ventanilla {{ c.ventanilla }}</b></div>
+    </div>
+    <app-avisos-de-cita [codigo]="c.codigo" />
+    <div pie><button type="button" class="btn btn-primario" (click)="verCita.set(null)">Cerrar</button></div>
+  </app-modal>
+}
+
+@if (porCancelar(); as c) {
+  <app-modal titulo="¿Cancelar tu cita?" [subtitulo]="tramite(c) + ' · ' + larga(c) + ', ' + c.hora" icono="calendar-x" tono="roja" [ancho]="460" (cerrar)="porCancelar.set(null)">
+    <p class="texto-3">El cupo quedará libre para otra persona. Te avisaremos de la cancelación.</p>
+    <div pie>
+      <button type="button" class="btn btn-fantasma" (click)="porCancelar.set(null)">No</button>
+      <button type="button" class="btn btn-peligro-lleno" [disabled]="trabajando()" (click)="confirmarCancelar()">Sí, cancelar</button>
+    </div>
+  </app-modal>
+}
+
+@if (porReprogramar(); as c) {
+  <app-modal titulo="Reprogramar cita" [subtitulo]="tramite(c) + ' · ahora: ' + larga(c) + ', ' + c.hora" icono="calendar-clock" [ancho]="760" (cerrar)="porReprogramar.set(null)">
+    <app-selector-horario [tramiteId]="c.tramiteId" [(fecha)]="nuevaFecha" [(hora)]="nuevaHora" />
+    <div pie>
+      <button type="button" class="btn btn-fantasma" (click)="porReprogramar.set(null)">Cancelar</button>
+      <button type="button" class="btn btn-primario" [disabled]="!nuevaHora() || trabajando()" (click)="confirmarReprogramar()">
+        @if (trabajando()) { <span class="girando"></span>Guardando… } @else { Confirmar nuevo horario }
+      </button>
+    </div>
+  </app-modal>
+}
