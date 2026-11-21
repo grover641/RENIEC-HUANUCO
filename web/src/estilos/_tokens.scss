@@ -1,0 +1,46 @@
+// Tokens del diseño (kit de componentes del equipo · CitaRENIEC Huánuco)
+:root {
+  --primario: #0B4F9C;
+  --primario-oscuro: #083D7A;
+  --primario-suave: #E6EEF8;
+  --secundario: #B0123E;
+  --secundario-suave: #FCE8EE;
+  --fondo: #F4F6F9;
+  --blanco: #FFFFFF;
+  --texto: #1F2937;
+  --texto-2: #6B7280;
+  --texto-3: #4B5563;
+  --titulo: #0B2A55;
+  --borde: #E3E8EF;
+  --borde-campo: #D5DEE8;
+  --exito: #2E7D47;
+  --exito-suave: #E7F4EC;
+  --advertencia: #E08A2A;
+  --advertencia-suave: #FDF1E3;
+  --advertencia-texto: #8A4B08;
+  --error: #C62828;
+  --error-suave: #FDECEC;
+  --error-texto: #9F1D1D;
+  --info: #139FA4;
+  --info-suave: #E3F5F5;
+  --pie: #0A2342;
+
+  --radio-sm: 10px;
+  --radio: 12px;
+  --radio-lg: 16px;
+  --sombra: 0 1px 2px rgba(16, 24, 40, .05), 0 4px 16px rgba(16, 24, 40, .06);
+  --sombra-alta: 0 12px 32px rgba(16, 24, 40, .16);
+
+  --fuente: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --fuente-titulo: 'Nunito Sans', 'Segoe UI', system-ui, sans-serif;
+  --ancho: 1200px;
+}
+
+@font-face { font-family: 'Inter'; font-weight: 400; font-display: swap; src: url('/fuentes/inter-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-weight: 500; font-display: swap; src: url('/fuentes/inter-latin-500-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-weight: 600; font-display: swap; src: url('/fuentes/inter-latin-600-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-weight: 700; font-display: swap; src: url('/fuentes/inter-latin-700-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-weight: 800; font-display: swap; src: url('/fuentes/inter-latin-800-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Nunito Sans'; font-weight: 700; font-display: swap; src: url('/fuentes/nunito-sans-latin-700-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Nunito Sans'; font-weight: 800; font-display: swap; src: url('/fuentes/nunito-sans-latin-800-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Nunito Sans'; font-weight: 900; font-display: swap; src: url('/fuentes/nunito-sans-latin-900-normal.woff2') format('woff2'); }

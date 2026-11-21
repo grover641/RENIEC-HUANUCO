@@ -1,0 +1,92 @@
+<div class="app">
+  <header class="barra">
+    <div class="izq">
+      <button type="button" class="btn btn-icono hamburguesa" (click)="lateralAbierto.set(!lateralAbierto())"
+        [attr.aria-expanded]="lateralAbierto()" aria-label="Abrir menú"><app-icono [nombre]="lateralAbierto() ? 'x' : 'menu'" /></button>
+      <a [routerLink]="sesion.rutaInicio()" aria-label="Ir a mi inicio" class="logo-enlace"><app-logo [tam]="36" /></a>
+      <span class="pastilla-sede"><app-icono nombre="map-pin" [tam]="15" />Sede Huánuco</span>
+      <span class="pastilla-rol" [style.background]="menu().fondoRol" [style.color]="menu().textoRol">{{ menu().etiquetaRol }}</span>
+    </div>
+    <div class="der">
+      <span class="reloj" [class.alerta]="sesion.porVencer()" title="La sesión se cierra tras 30 minutos sin actividad">
+        <app-icono nombre="clock" [tam]="15" />Sesión: {{ reloj() }}
+      </span>
+      @if (usuario()?.rol === 'ciudadano') {
+        <a class="campana" routerLink="/ciudadano/avisos" [attr.aria-label]="'Mis avisos: ' + avisosSinLeer() + ' sin leer'">
+          <app-icono nombre="bell" [tam]="20" />
+          @if (avisosSinLeer() > 0) { <span class="punto"></span> }
+        </a>
+      }
+      <div class="usuario">
+        <button type="button" class="boton-usuario" (click)="menuAbierto.set(!menuAbierto())" aria-haspopup="menu" [attr.aria-expanded]="menuAbierto()">
+          <span class="avatar" [style.background]="menu().colorAvatar">{{ ini() }}</span>
+          <span class="datos"><span class="nombre">{{ nombreCorto() }}</span><span class="sub">{{ subtitulo() }}</span></span>
+          <app-icono nombre="chevron-down" [tam]="16" />
+        </button>
+        @if (menuAbierto()) {
+          <div class="menu-usuario" role="menu">
+            <a role="menuitem" [routerLink]="rutaPerfil()"><app-icono nombre="user" [tam]="18" />Mi perfil</a>
+            <button type="button" role="menuitem" class="rojo" (click)="salir()"><app-icono nombre="log-out" [tam]="18" />Cerrar sesión</button>
+          </div>
+        }
+      </div>
+    </div>
+  </header>
+
+  <div class="app-cuerpo">
+    <aside class="app-lateral" [class.abierto]="lateralAbierto()">
+      <nav class="lateral" [attr.aria-label]="'Menú de ' + menu().grupo">
+        <div class="grupo">
+          <span class="titulo-grupo">{{ menu().grupo }}</span>
+          @for (it of menu().items; track it.ruta) {
+            @if (it.nuevaPestana) {
+              <a class="item" [href]="it.ruta" target="_blank" rel="noopener"><app-icono [nombre]="it.icono" /><span>{{ it.texto }}</span><app-icono nombre="arrow-right" [tam]="14" class="externo" /></a>
+            } @else {
+              <a class="item" [routerLink]="it.ruta" routerLinkActive="activo" ariaCurrentWhenActive="page">
+                <app-icono [nombre]="it.icono" /><span>{{ it.texto }}</span>
+                @if (insignia(it.insignia) > 0) {
+                  <span class="contador" [class.naranja]="it.insignia === 'conflictos'">{{ insignia(it.insignia) }}</span>
+                }
+              </a>
+            }
+          }
+        </div>
+        <div class="info">
+          @switch (usuario()?.rol) {
+            @case ('operador') {
+              <span class="info-titulo">{{ usuario()?.ventanilla ? 'Ventanilla ' + usuario()?.ventanilla : 'Sin ventanilla asignada' }}</span>
+              @if (usuario()?.ventanilla) {
+                <span class="linea"><span class="bolita" [class.naranja]="atendiendo()" [class.verde]="!atendiendo()"></span>{{ atendiendo() ? 'Atendiendo' : 'Disponible' }} · {{ turnoDelDia }}</span>
+              } @else {
+                <span class="linea"><span class="bolita gris"></span>Pide al administrador que te asigne una</span>
+              }
+            }
+            @case ('administrador') {
+              <span class="info-titulo">Estado del sistema</span>
+              <span class="linea"><span class="bolita" [class.verde]="integ().central === 'conectado'" [class.rojo]="integ().central !== 'conectado'"></span>{{ integ().central === 'conectado' ? 'Sistema central conectado' : 'Sistema central sin respuesta' }}</span>
+              <span class="linea"><span class="bolita" [class.naranja]="integ().modoLocal" [class.gris]="!integ().modoLocal"></span>{{ integ().modoLocal ? 'Modo local activo' : 'Modo local en espera' }}</span>
+            }
+            @default {
+              <span class="info-titulo">Sede Huánuco</span>
+              <span class="linea"><span class="bolita" [class.verde]="abiertoAhora()" [class.gris]="!abiertoAhora()"></span>{{ abiertoAhora() ? 'Abierto hoy hasta las 16:30' : 'Cerrado · abre a las 8:00' }}</span>
+            }
+          }
+        </div>
+        <button type="button" class="item salir" (click)="salir()"><app-icono nombre="log-out" />Cerrar sesión</button>
+      </nav>
+    </aside>
+    <main class="app-principal" id="contenido">
+      <router-outlet />
+    </main>
+  </div>
+</div>
+
+@if (sesion.porVencer()) {
+  <app-modal titulo="Tu sesión está por vencer" icono="timer" tono="guinda" [ancho]="440" (cerrar)="sesion.seguir()">
+    <p>Por seguridad, se cerrará en <strong>{{ reloj() }}</strong> por inactividad (30 min).</p>
+    <div pie>
+      <button type="button" class="btn btn-fantasma" (click)="salir()">Cerrar sesión</button>
+      <button type="button" class="btn btn-primario" (click)="sesion.seguir()">Seguir conectado</button>
+    </div>
+  </app-modal>
+}

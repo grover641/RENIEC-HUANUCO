@@ -1,1 +1,6 @@
-/* You can add global styles to this file, and also import other style files */
+/* Estilos globales de CitaRENIEC Huánuco.
+   Cada archivo de la carpeta src/estilos tiene una sola responsabilidad. */
+@use 'estilos/tokens';
+@use 'estilos/base';
+@use 'estilos/componentes';
+@use 'estilos/plantillas';

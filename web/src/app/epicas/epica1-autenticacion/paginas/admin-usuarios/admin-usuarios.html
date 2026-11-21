@@ -1,0 +1,150 @@
+<div class="encabezado-pagina">
+  <div><h1>Gestión de usuarios</h1><p>Ciudadanos, operadores de ventanilla y administradores de la sede.</p></div>
+  <button type="button" class="btn btn-primario btn-grande" (click)="abrirNuevo()"><app-icono nombre="user-plus" />Nuevo operador</button>
+</div>
+
+<section class="tarjeta tabla-tarjeta">
+  <div class="filtros">
+    <div class="entrada-icono buscar">
+      <app-icono nombre="search" />
+      <input class="entrada" type="search" placeholder="Buscar por DNI, nombre o correo" aria-label="Buscar usuarios"
+        [value]="texto()" (input)="buscar($any($event.target).value)" />
+    </div>
+    <div class="pastillas" role="group" aria-label="Filtrar por rol">
+      @for (f of filtros; track f.valor) {
+        <button type="button" class="pastilla" [attr.aria-pressed]="rol() === f.valor" (click)="filtrar(f.valor)">{{ f.texto }}</button>
+      }
+    </div>
+  </div>
+
+  <div class="tabla-envoltura">
+    <table class="tabla">
+      <thead><tr><th>DNI</th><th>Nombre</th><th>Correo</th><th>Rol</th><th>Ventanilla</th><th>Estado</th><th>Acciones</th></tr></thead>
+      <tbody>
+        @for (u of visibles(); track u.id) {
+          <tr>
+            <td class="mono">{{ enmascararDni(u.dni) }}</td>
+            <td>
+              <div class="persona">
+                <span class="avatar avatar-suave" [class]="'avatar avatar-suave ' + u.rol">{{ iniciales(u.nombres, u.apellidos) }}</span>
+                <div><b>{{ u.nombres }} {{ u.apellidos }}</b>@if (esYo(u)) { <span class="insignia insignia-gris yo">Tú</span> }
+                  <small>Último acceso: {{ haceCuanto(u.ultimoAcceso) }}</small></div>
+              </div>
+            </td>
+            <td>{{ enmascararCorreo(u.correo) }}</td>
+            <td><span class="insignia" [class]="'insignia ' + claseRol(u.rol)">{{ etiquetaRol(u.rol) }}</span></td>
+            <td>{{ u.rol === 'operador' && u.ventanilla ? 'V' + u.ventanilla : '—' }}</td>
+            <td>
+              <label class="estado">
+                <span class="interruptor">
+                  <input type="checkbox" [checked]="u.estado === 'activo'" [disabled]="esYo(u)" (change)="alternar(u)"
+                    [attr.aria-label]="(u.estado === 'activo' ? 'Desactivar a ' : 'Activar a ') + u.nombres" />
+                  <span></span>
+                </span>
+                <span [class.activo]="u.estado === 'activo'">{{ u.estado === 'activo' ? 'Activo' : 'Inactivo' }}</span>
+              </label>
+            </td>
+            <td>
+              <div class="acciones">
+                <button type="button" class="btn btn-icono" (click)="abrirEditar(u)" [attr.aria-label]="'Editar a ' + u.nombres" title="Editar"><app-icono nombre="pencil" [tam]="18" /></button>
+                <button type="button" class="btn btn-icono" (click)="porRestablecer.set(u)" [disabled]="esYo(u)" [attr.aria-label]="'Restablecer contraseña de ' + u.nombres" title="Restablecer contraseña"><app-icono nombre="key" [tam]="18" /></button>
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="7" class="vacio">{{ cargando() ? 'Cargando usuarios…' : 'No hay usuarios que coincidan con la búsqueda.' }}</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pie-tabla">
+    <span class="texto-sm texto-3">Mostrando {{ visibles().length }} de {{ total() }} usuarios · datos personales enmascarados (Ley N.º 29733)</span>
+    @if (paginas() > 1) {
+      <div class="paginacion">
+        <button type="button" class="btn btn-icono" [disabled]="pagina() === 1" (click)="pagina.set(pagina() - 1)" aria-label="Página anterior"><app-icono nombre="chevron-left" [tam]="18" /></button>
+        @for (p of listaPaginas(); track p) {
+          <button type="button" class="btn btn-icono" [class.actual]="pagina() === p" (click)="pagina.set(p)">{{ p }}</button>
+        }
+        <button type="button" class="btn btn-icono" [disabled]="pagina() === paginas()" (click)="pagina.set(pagina() + 1)" aria-label="Página siguiente"><app-icono nombre="chevron-right" [tam]="18" /></button>
+      </div>
+    }
+  </div>
+</section>
+
+@if (formAbierto()) {
+  <app-modal [titulo]="editando() ? 'Editar usuario' : 'Nuevo operador'"
+    [subtitulo]="editando() ? 'Actualiza los datos. El rol no se cambia desde aquí.' : 'Le enviaremos una contraseña temporal a su correo. Deberá cambiarla en su primer ingreso.'"
+    [icono]="editando() ? 'pencil' : 'user-plus'" tono="turquesa" [ancho]="640" (cerrar)="formAbierto.set(false)">
+    <form id="form-usuario" (submit)="guardar($event)" novalidate class="pila">
+      <div class="rejilla-2">
+        <div class="campo" [class.con-error]="errores()['dni']">
+          <label for="u-dni">DNI *</label>
+          <input id="u-dni" class="entrada" inputmode="numeric" maxlength="8" placeholder="8 dígitos" [value]="form().dni" (input)="poner('dni', $any($event.target).value)" />
+          @if (errores()['dni']) { <span class="error">{{ errores()['dni'] }}</span> }
+        </div>
+        @if (!editando() || editando()?.rol === 'operador') {
+          <div class="campo" [class.con-error]="errores()['ventanilla']">
+            <label for="u-ven">Ventanilla asignada *</label>
+            <select id="u-ven" class="entrada" [value]="form().ventanilla ?? ''" (change)="poner('ventanilla', $any($event.target).value)">
+              @if (editando()) { <option value="">Sin ventanilla</option> }
+              @for (v of ventanillas; track v) { <option [value]="v" [selected]="form().ventanilla === v">Ventanilla {{ v }}</option> }
+            </select>
+            @if (errores()['ventanilla']) { <span class="error">{{ errores()['ventanilla'] }}</span> }
+          </div>
+        } @else {
+          <div class="campo"><span class="etiqueta">Rol</span><input class="entrada" [value]="etiquetaRol(editando()!.rol)" readonly /></div>
+        }
+        <div class="campo" [class.con-error]="errores()['nombres']">
+          <label for="u-nom">Nombres *</label>
+          <input id="u-nom" class="entrada" placeholder="Ej.: Sofía" [value]="form().nombres" (input)="poner('nombres', $any($event.target).value)" />
+          @if (errores()['nombres']) { <span class="error">{{ errores()['nombres'] }}</span> }
+        </div>
+        <div class="campo" [class.con-error]="errores()['apellidos']">
+          <label for="u-ape">Apellidos *</label>
+          <input id="u-ape" class="entrada" placeholder="Ej.: Ramírez Lino" [value]="form().apellidos" (input)="poner('apellidos', $any($event.target).value)" />
+          @if (errores()['apellidos']) { <span class="error">{{ errores()['apellidos'] }}</span> }
+        </div>
+        <div class="campo" [class.con-error]="errores()['correo']">
+          <label for="u-correo">{{ editando()?.rol === 'ciudadano' ? 'Correo electrónico *' : 'Correo institucional *' }}</label>
+          <input id="u-correo" class="entrada" type="email" placeholder="nombre@sede.demo" [value]="form().correo" (input)="poner('correo', $any($event.target).value)" />
+          @if (errores()['correo']) { <span class="error">{{ errores()['correo'] }}</span> }
+        </div>
+        <div class="campo" [class.con-error]="errores()['celular']">
+          <label for="u-cel">Celular</label>
+          <input id="u-cel" class="entrada" inputmode="numeric" maxlength="9" placeholder="9 dígitos" [value]="form().celular" (input)="poner('celular', $any($event.target).value)" />
+          @if (errores()['celular']) { <span class="error">{{ errores()['celular'] }}</span> }
+        </div>
+      </div>
+      @if (!editando()) {
+        <div class="aviso aviso-info"><app-icono nombre="shield-check" /><div>Rol: <b>Operador de ventanilla</b>. Podrá hacer check-in, llamar y atender turnos.</div></div>
+      }
+    </form>
+    <div pie>
+      <button type="button" class="btn btn-fantasma" (click)="formAbierto.set(false)">Cancelar</button>
+      <button type="submit" form="form-usuario" class="btn btn-primario" [disabled]="guardando()">
+        @if (guardando()) { <span class="girando"></span>Guardando… } @else if (editando()) { Guardar cambios } @else { <app-icono nombre="user-plus" [tam]="18" />Crear operador }
+      </button>
+    </div>
+  </app-modal>
+}
+
+@if (porRestablecer(); as u) {
+  <app-modal titulo="¿Restablecer la contraseña?" [subtitulo]="u.nombres + ' ' + u.apellidos" icono="key" tono="naranja" [ancho]="460" (cerrar)="porRestablecer.set(null)">
+    <p class="texto-3">Se generará una contraseña temporal, se cerrarán sus sesiones abiertas y deberá cambiarla en su próximo ingreso.</p>
+    <div pie>
+      <button type="button" class="btn btn-fantasma" (click)="porRestablecer.set(null)">Cancelar</button>
+      <button type="button" class="btn btn-primario" (click)="confirmarRestablecer()">Sí, restablecer</button>
+    </div>
+  </app-modal>
+}
+
+@if (temporal(); as r) {
+  <app-modal [titulo]="r.nuevo ? 'Operador creado' : 'Contraseña restablecida'" [subtitulo]="r.nombre" icono="check-circle" tono="verde" [ancho]="480" (cerrar)="temporal.set(null)">
+    <p class="texto-3">Le enviamos la contraseña temporal a <b>{{ enmascararCorreo(r.correo) }}</b>. Deberá cambiarla en su primer ingreso.</p>
+    <div class="clave-temporal"><span class="mono">{{ r.clave }}</span>
+      <button type="button" class="btn btn-icono" (click)="copiar(r.clave)" aria-label="Copiar contraseña temporal"><app-icono nombre="copy" [tam]="18" /></button></div>
+    <p class="texto-xs texto-2">Por ahora se muestra aquí, como en el diseño. «Enviarla solo por correo» es una mejora pendiente del backlog.</p>
+    <div pie><button type="button" class="btn btn-primario" (click)="temporal.set(null)">Entendido</button></div>
+  </app-modal>
+}
