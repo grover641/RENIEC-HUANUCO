@@ -50,7 +50,7 @@
       @if (busqueda()) {
         <button type="button" class="btn btn-enlace" (click)="busqueda.set('')">Ver todos los trámites</button>
       } @else {
-        <a class="enlace-flecha" routerLink="/ciudadano/reservar">Ver todos los trámites<app-icono nombre="arrow-right" [tam]="18" /></a>
+        <a class="enlace-flecha" routerLink="/registro">Crear mi cuenta<app-icono nombre="arrow-right" [tam]="18" /></a>
       }
     </div>
     <div class="rejilla-3">
@@ -91,41 +91,6 @@
   </div>
 </section>
 
-<!-- Consultas rápidas -->
-<section class="consultas">
-  <div class="contenedor">
-    <h2>Consultas rápidas</h2>
-    <p class="sub">Sin iniciar sesión. Evita viajar solo para preguntar.</p>
-    <div class="rejilla-2">
-      <form class="consulta" (submit)="consultarDni($event)" novalidate>
-        <div class="fila" style="flex-wrap:nowrap"><span class="icono-caja verde"><app-icono nombre="id-card" [tam]="22" /></span>
-          <div><h3>¿Mi DNI está listo?</h3><p class="texto-2 texto-sm">Consulta el estado de tu trámite con tu DNI.</p></div></div>
-        <div class="campo" [class.con-error]="errorDni()">
-          <label for="c-dni">Número de DNI</label>
-          <div class="en-linea">
-            <input id="c-dni" class="entrada" inputmode="numeric" maxlength="8" placeholder="8 dígitos, ej.: 41234578"
-              [value]="dni()" (input)="dni.set($any($event.target).value.replace(/\D/g, '')); errorDni.set('')" />
-            <button type="submit" class="btn btn-primario">Consultar</button>
-          </div>
-          @if (errorDni()) { <span class="error">{{ errorDni() }}</span> }
-        </div>
-      </form>
-      <form class="consulta" (submit)="consultarTurno($event)" novalidate>
-        <div class="fila" style="flex-wrap:nowrap"><span class="icono-caja guinda"><app-icono nombre="ticket" [tam]="22" /></span>
-          <div><h3>Mi turno</h3><p class="texto-2 texto-sm">Mira tu posición en la cola. Se actualiza cada 30 s.</p></div></div>
-        <div class="campo" [class.con-error]="errorCodigo()">
-          <label for="c-cod">Código de turno o de cita</label>
-          <div class="en-linea">
-            <input id="c-cod" class="entrada mayus" placeholder="Ej.: A-015 o CR-7F3K9" [value]="codigo()" (input)="codigo.set($any($event.target).value); errorCodigo.set('')" />
-            <button type="submit" class="btn btn-acento">Ver mi turno</button>
-          </div>
-          @if (errorCodigo()) { <span class="error">{{ errorCodigo() }}</span> }
-        </div>
-      </form>
-    </div>
-  </div>
-</section>
-
 <!-- Sede -->
 <section class="seccion blanca" id="sedes">
   <div class="contenedor">
@@ -141,7 +106,7 @@
           <div>Atención preferente para gestantes, adultos mayores y personas con discapacidad (Ley N.º 28683).</div></div>
         <div class="fila">
           <a class="btn btn-secundario" href="https://www.google.com/maps/search/?api=1&query=Jr.+General+Prado+Huanuco" target="_blank" rel="noopener"><app-icono nombre="navigation" [tam]="18" />Cómo llegar</a>
-          <a class="btn btn-primario" routerLink="/ciudadano/reservar"><app-icono nombre="calendar-plus" [tam]="18" />Reservar en esta sede</a>
+          <a class="btn btn-primario" routerLink="/registro"><app-icono nombre="user-plus" [tam]="18" />Crear mi cuenta</a>
         </div>
       </div>
       <div class="mapa">

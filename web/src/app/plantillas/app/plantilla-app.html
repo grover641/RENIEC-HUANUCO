@@ -11,12 +11,6 @@
       <span class="reloj" [class.alerta]="sesion.porVencer()" title="La sesión se cierra tras 30 minutos sin actividad">
         <app-icono nombre="clock" [tam]="15" />Sesión: {{ reloj() }}
       </span>
-      @if (usuario()?.rol === 'ciudadano') {
-        <a class="campana" routerLink="/ciudadano/avisos" [attr.aria-label]="'Mis avisos: ' + avisosSinLeer() + ' sin leer'">
-          <app-icono nombre="bell" [tam]="20" />
-          @if (avisosSinLeer() > 0) { <span class="punto"></span> }
-        </a>
-      }
       <div class="usuario">
         <button type="button" class="boton-usuario" (click)="menuAbierto.set(!menuAbierto())" aria-haspopup="menu" [attr.aria-expanded]="menuAbierto()">
           <span class="avatar" [style.background]="menu().colorAvatar">{{ ini() }}</span>
@@ -56,15 +50,10 @@
             @case ('operador') {
               <span class="info-titulo">{{ usuario()?.ventanilla ? 'Ventanilla ' + usuario()?.ventanilla : 'Sin ventanilla asignada' }}</span>
               @if (usuario()?.ventanilla) {
-                <span class="linea"><span class="bolita" [class.naranja]="atendiendo()" [class.verde]="!atendiendo()"></span>{{ atendiendo() ? 'Atendiendo' : 'Disponible' }} · {{ turnoDelDia }}</span>
+                <span class="linea"><span class="bolita verde"></span>Asignada · {{ turnoDelDia }}</span>
               } @else {
                 <span class="linea"><span class="bolita gris"></span>Pide al administrador que te asigne una</span>
               }
-            }
-            @case ('administrador') {
-              <span class="info-titulo">Estado del sistema</span>
-              <span class="linea"><span class="bolita" [class.verde]="integ().central === 'conectado'" [class.rojo]="integ().central !== 'conectado'"></span>{{ integ().central === 'conectado' ? 'Sistema central conectado' : 'Sistema central sin respuesta' }}</span>
-              <span class="linea"><span class="bolita" [class.naranja]="integ().modoLocal" [class.gris]="!integ().modoLocal"></span>{{ integ().modoLocal ? 'Modo local activo' : 'Modo local en espera' }}</span>
             }
             @default {
               <span class="info-titulo">Sede Huánuco</span>

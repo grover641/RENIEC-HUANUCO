@@ -9,8 +9,6 @@ import { bd } from '../../nucleo/api/base-datos';
 import { enmascararDni, iniciales, primerApellido, primerNombre } from '../../nucleo/utilidades/formato';
 import { SEDE } from '../../datos/semilla';
 import { MENUS } from './menus';
-import { conflictosPendientes, estadoIntegracion } from '../../epicas/epica5-integracion/api/integracion.api';
-import { actualDe } from '../../epicas/epica3-turnos/api/turnos.api';
 import { cambiosBd } from '../../nucleo/api/base-datos';
 
 /** Plantilla de la aplicación: barra superior, menú lateral según el rol y aviso de sesión por vencer. */
@@ -55,12 +53,6 @@ export class PlantillaApp {
     return d.getDay() >= 1 && d.getDay() <= 5 && min >= 8 * 60 && min < 16 * 60 + 30;
   });
   protected readonly sede = SEDE;
-  protected readonly conflictos = computed(() => { cambiosBd(); return conflictosPendientes(); });
-  /** Estado real de la integración para el menú del administrador (cambia al simular una caída de internet). */
-  // Se copian los valores: el objeto de la base es siempre el mismo y Angular no notaría el cambio.
-  protected readonly integ = computed(() => { cambiosBd(); const i = estadoIntegracion(); return { central: i.central, modoLocal: i.modoLocal }; });
-  /** Estado real de la ventanilla para el menú del operador. */
-  protected readonly atendiendo = computed(() => { cambiosBd(); const v = this.usuario()?.ventanilla; return v ? !!actualDe(v) : false; });
   protected readonly turnoDelDia = new Date().getHours() < 13 ? 'turno mañana' : 'turno tarde';
 
   constructor() {
@@ -71,7 +63,6 @@ export class PlantillaApp {
 
   protected insignia(tipo?: 'avisos' | 'conflictos'): number {
     if (tipo === 'avisos') return this.avisosSinLeer();
-    if (tipo === 'conflictos') return this.conflictos(); // conflictos de sincronización (HU-04B)
     return 0;
   }
 

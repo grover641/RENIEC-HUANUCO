@@ -20,7 +20,6 @@ export async function listar(token: string, texto = '', rol: Rol | 'todos' = 'to
   soloAdmin(token);
   const t = texto.trim().toLowerCase();
   return bd().usuarios
-    .filter((u) => !u.dni.startsWith('X')) // cuentas eliminadas (HU-19)
     .filter((u) => rol === 'todos' || u.rol === rol)
     .filter((u) => !t || u.dni.includes(t) || `${u.nombres} ${u.apellidos}`.toLowerCase().includes(t) || u.correo.toLowerCase().includes(t))
     .map(publico);

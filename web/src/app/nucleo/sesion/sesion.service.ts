@@ -62,8 +62,8 @@ export class SesionService {
   rutaInicio(u: UsuarioPublico | null = this.usuario()): string {
     if (!u) return '/ingresar';
     if (u.debeCambiarClave) return rutaPerfil(u.rol); // contraseña temporal: primero debe cambiarla (HU-20)
-    if (u.rol === 'administrador') return '/admin/dashboard';
-    if (u.rol === 'operador') return '/operador/panel';
+    if (u.rol === 'administrador') return '/admin/usuarios';
+    if (u.rol === 'operador') return '/operador/perfil';
     return '/ciudadano/inicio';
   }
 

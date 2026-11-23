@@ -6,7 +6,7 @@ import { SesionService } from '../../../../nucleo/sesion/sesion.service';
 import { Tramite } from '../../../../nucleo/modelos';
 import { soles } from '../../../../nucleo/utilidades/formato';
 import { SEDE } from '../../../../datos/semilla';
-import { catalogo } from '../../../epica2-reserva/api/tramites.api';
+import { bd } from '../../../../nucleo/api/base-datos';
 import { TarjetaIngreso } from '../../componentes/tarjeta-ingreso/tarjeta-ingreso';
 
 /**
@@ -28,14 +28,10 @@ export class Inicio {
 
   protected readonly busqueda = signal('');
   protected readonly detalle = signal<Tramite | null>(null);
-  protected readonly dni = signal('');
-  protected readonly codigo = signal('');
-  protected readonly errorDni = signal('');
-  protected readonly errorCodigo = signal('');
 
   protected readonly tramites = computed(() => {
     const t = normalizar(this.busqueda());
-    const lista = catalogo();
+    const lista = bd().tramites.filter((x) => x.publicado);
     return t ? lista.filter((x) => normalizar(x.nombre + ' ' + x.descripcion + ' ' + x.categoria).includes(t)) : lista;
   });
 
@@ -65,20 +61,7 @@ export class Inicio {
 
   protected reservar(t: Tramite): void {
     this.detalle.set(null);
-    this.router.navigate(['/ciudadano/reservar'], { queryParams: { tramite: t.id } });
-  }
-
-  protected consultarDni(ev: Event): void {
-    ev.preventDefault();
-    if (!/^\d{8}$/.test(this.dni())) { this.errorDni.set('Ingresa los 8 dígitos de tu DNI.'); return; }
-    this.router.navigate(['/consulta/dni'], { queryParams: { dni: this.dni() } });
-  }
-
-  protected consultarTurno(ev: Event): void {
-    ev.preventDefault();
-    const c = this.codigo().trim().toUpperCase();
-    if (!/^(A-\d{3}|HCO-\d{3}|CR-[A-Z0-9]{5})$/.test(c)) { this.errorCodigo.set('Escribe un código como A-015 o CR-7F3K9.'); return; }
-    this.router.navigate(['/consulta/turno'], { queryParams: { codigo: c } });
+    this.router.navigate(['/registro']); // la reserva llega en el Sprint 3: primero se crea la cuenta
   }
 
   protected irA(id: string): void {

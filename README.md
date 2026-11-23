@@ -1,5 +1,16 @@
 # RENIEC-MODERNO · CitaRENIEC Huánuco
 
+> **Rama `morales-sprints-epica1`: la Épica 1 organizada por sprints.**
+> Muestra solo la Épica 1 (Autenticación y gestión de usuarios), separada según el plan de sprints de Jira.
+> Cada sprint es un commit con su etiqueta, para ver cómo quedó la web al cierre de cada uno.
+>
+> | Sprint | Fechas | Historias | Etiqueta |
+> |---|---|---|---|
+> | Sprint 1 | 26/10 – 06/11/2026 | HU-15 Registro · HU-16 Ingreso y acceso por rol · HU-17 Recuperar contraseña · HU-18 Perfil · HU-20 Gestión de usuarios | `sprint-1` |
+> | Sprint 2 | 09/11 – 20/11/2026 | HU-19 Eliminar cuenta (no se terminó en el Sprint 1) | se agrega en el siguiente commit |
+>
+> Las épicas 2 a 5 están en `main`, donde se unen todas las partes. Esta rama es solo para revisar la Épica 1 y no se une a `main`.
+
 Web de **citas, turnos digitales y avisos** para la Oficina Regional de RENIEC Huánuco.
 Proyecto académico del curso **Gestión de Proyectos II** (Universidad de Huánuco), Grupo G1 «Equipo Maravilla».
 **No es un sitio oficial de RENIEC.**

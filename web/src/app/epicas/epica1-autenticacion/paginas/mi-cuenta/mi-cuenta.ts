@@ -2,17 +2,16 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { Router } from '@angular/router';
 import { Icono } from '../../../../compartido/componentes/icono/icono';
 import { CampoClave } from '../../../../compartido/componentes/campo-clave/campo-clave';
-import { Modal } from '../../../../compartido/componentes/modal/modal';
 import { ToastService } from '../../../../compartido/componentes/toast/toast.service';
 import { camposDe, mensajeDe } from '../../../../nucleo/api/api-error';
 import { SesionService } from '../../../../nucleo/sesion/sesion.service';
 import { enmascararDni, iniciales, mesAnio } from '../../../../nucleo/utilidades/formato';
-import { actualizarContacto, cambiarClave, eliminarCuenta } from '../../api/perfil.api';
+import { actualizarContacto, cambiarClave } from '../../api/perfil.api';
 
-/** HU-18 · «Mi cuenta» (T18.2) y HU-19 · Eliminar cuenta con confirmación (T19.2). */
+/** HU-18 · «Mi cuenta» (T18.2). */
 @Component({
   selector: 'app-mi-cuenta',
-  imports: [Icono, CampoClave, Modal],
+  imports: [Icono, CampoClave],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './mi-cuenta.html',
   styles: `
@@ -22,9 +21,6 @@ import { actualizarContacto, cambiarClave, eliminarCuenta } from '../../api/perf
     .candado { margin-left: auto; display: inline-flex; gap: 6px; align-items: center; font-size: 13px; color: var(--texto-2); }
     .tarjeta h3 { margin-bottom: 18px; }
     .pie-form { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
-    .peligro { border: 1.5px solid #F0B4B4; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
-    .peligro h3 { color: var(--error-texto); margin-bottom: 4px; }
-    .peligro p { color: var(--texto-3); flex: 1; min-width: 240px; }
     .resaltada { border: 2px solid var(--primario); box-shadow: 0 0 0 4px rgba(11, 79, 156, .12); }
   `,
 })
@@ -46,10 +42,6 @@ export class MiCuenta {
   protected readonly erroresClave = signal<Record<string, string>>({});
   protected readonly guardandoClave = signal(false);
 
-  protected readonly confirmarBaja = signal(false);
-  protected readonly claveBaja = signal('');
-  protected readonly errorBaja = signal('');
-  protected readonly eliminando = signal(false);
 
   protected readonly ini = computed(() => { const u = this.usuario(); return u ? iniciales(u.nombres, u.apellidos) : ''; });
   protected readonly desde = computed(() => { const u = this.usuario(); return u ? mesAnio(new Date(u.creado)) : ''; });
@@ -94,25 +86,4 @@ export class MiCuenta {
     }
   }
 
-  protected async eliminar(ev: Event): Promise<void> {
-    ev.preventDefault();
-    const t = this.sesion.token();
-    if (!t) return;
-    this.eliminando.set(true);
-    try {
-      await eliminarCuenta(t, this.claveBaja());
-      this.confirmarBaja.set(false);
-      this.sesion.cerrar('Tu cuenta se eliminó y tus datos personales se anonimizaron.');
-    } catch (e) {
-      this.errorBaja.set(camposDe(e)['clave'] ?? mensajeDe(e));
-    } finally {
-      this.eliminando.set(false);
-    }
-  }
-
-  protected abrirBaja(): void {
-    this.claveBaja.set('');
-    this.errorBaja.set('');
-    this.confirmarBaja.set(true);
-  }
 }

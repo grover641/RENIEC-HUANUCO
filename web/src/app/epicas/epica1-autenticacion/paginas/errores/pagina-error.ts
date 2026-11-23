@@ -38,7 +38,7 @@ import { SesionService } from '../../../../nucleo/sesion/sesion.service';
           }
         </div>
         <p class="texto-sm texto-2 atajos">También puedes ir a:
-          <a routerLink="/consulta/dni">¿Mi DNI está listo?</a> <a routerLink="/consulta/turno">Mi turno</a> <a routerLink="/" fragment="ayuda">Ayuda</a></p>
+          <a routerLink="/" fragment="ayuda">Ayuda</a></p>
       </div>
     </section>`,
   styles: `

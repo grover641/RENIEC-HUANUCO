@@ -102,8 +102,8 @@ export class PerfilOperador {
       this.sesion.actualizar(u);
       this.actual.set(''); this.nueva.set(''); this.confirmar.set('');
       this.errores.set({});
-      this.toast.exito(eraTemporal ? 'Listo. Ya puedes usar el panel de turnos.' : 'Tu contraseña se actualizó.');
-      if (eraTemporal) await this.router.navigateByUrl('/operador/panel');
+      this.toast.exito(eraTemporal ? 'Listo. Ya tienes tu propia contraseña.' : 'Tu contraseña se actualizó.');
+      if (eraTemporal) await this.router.navigateByUrl(this.sesion.rutaInicio(u));
     } catch (e) {
       this.errores.set(camposDe(e));
       if (!Object.keys(camposDe(e)).length) this.toast.error(mensajeDe(e));
