@@ -7,7 +7,7 @@
 > | Sprint | Fechas | Historias | Etiqueta |
 > |---|---|---|---|
 > | Sprint 1 | 26/10 – 06/11/2026 | HU-15 Registro · HU-16 Ingreso y acceso por rol · HU-17 Recuperar contraseña · HU-18 Perfil · HU-20 Gestión de usuarios | `sprint-1` |
-> | Sprint 2 | 09/11 – 20/11/2026 | HU-19 Eliminar cuenta (no se terminó en el Sprint 1) | se agrega en el siguiente commit |
+> | Sprint 2 | 09/11 – 20/11/2026 | HU-19 Eliminar cuenta (no se terminó en el Sprint 1) | `sprint-2` |
 >
 > Las épicas 2 a 5 están en `main`, donde se unen todas las partes. Esta rama es solo para revisar la Épica 1 y no se une a `main`.
 

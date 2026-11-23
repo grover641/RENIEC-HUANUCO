@@ -1,6 +1,6 @@
 # Épica: Registro y autenticación
 
-Historias: HU-15, HU-16, HU-17, HU-18 y HU-20 · **Sprint 1** (la HU-19 «Eliminar cuenta» pasa al Sprint 2) · Fase 1 (la sube: Morales).
+Historias: HU-15, HU-16, HU-17, HU-18 y HU-20 (**Sprint 1**) · HU-19 (**Sprint 2**) · Fase 1 (la sube: Morales).
 
 ## Pantallas (`paginas/`)
 - `inicio`: Inicio público
@@ -10,7 +10,7 @@ Historias: HU-15, HU-16, HU-17, HU-18 y HU-20 · **Sprint 1** (la HU-19 «Elimin
 - `errores`: 403 y 404
 - `privacidad`: Política de privacidad
 - `mi-inicio`: Mi inicio del ciudadano
-- `mi-cuenta`: Mi cuenta (datos de contacto y contraseña)
+- `mi-cuenta`: Mi cuenta y eliminar cuenta (HU-19, Sprint 2)
 - `perfil-operador`: Perfil del operador
 - `admin-usuarios`: Gestión de usuarios
 
